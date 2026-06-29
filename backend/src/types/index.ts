@@ -12,3 +12,15 @@ export interface PublicUser {
   role: Role;
   createdAt: Date;
 }
+
+export interface OrderItemInput {
+  productId?: unknown;
+  quantity?: unknown;
+}
+
+export interface CreateOrderBody {
+  customerId?: unknown;
+  items?: OrderItemInput[];
+  notes?: unknown;
+  deliveryDate?: unknown;
+}

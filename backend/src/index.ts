@@ -7,6 +7,9 @@ import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
 import categoryRoutes from './routes/category.routes';
 import customerRoutes from './routes/customer.routes';
+import orderRoutes from './routes/order.routes';
+import financeRoutes from './routes/finance.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -31,7 +34,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/customers', customerRoutes);
-// TODO (PR #3): orders, finance, dashboard
+app.use('/api/orders', orderRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 404 + error handling (must be last)
 app.use(notFoundHandler);
