@@ -79,7 +79,9 @@ Three services. **Names must contain `butterbloombatter`** so URLs read e.g.
 ### 2. Backend — Render.com
 - Service name: **`butterbloombatter-api`** → `https://butterbloombatter-api.onrender.com`
 - Root directory: `backend`
-- Build: `npm install && npx prisma generate && npx prisma migrate deploy && npm run build`
+- Build: `npm install --include=dev && npx prisma generate && npx prisma migrate deploy && npm run build`
+  (`--include=dev` is required because `NODE_ENV=production` otherwise skips the
+  `@types/*` + `typescript` devDependencies that `tsc` needs to compile.)
 - Start: `npm start`
 - Env vars (Render dashboard): `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`,
   `JWT_EXPIRES_IN=15m`, `JWT_REFRESH_EXPIRES_IN=7d`, `CLOUDINARY_*`, `NODE_ENV=production`,
