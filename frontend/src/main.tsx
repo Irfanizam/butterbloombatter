@@ -1,22 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { Toaster } from './components/ui/Toaster';
 import './index.css';
 
-// Routing, layouts, and pages are wired up in Phase 3.
-function App() {
-  return (
-    <div className="min-h-screen bg-brand-bg text-brand-text flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-5xl">🍪</div>
-        <h1 className="mt-4 text-2xl font-bold text-brand-dark">ButterBloomBatter</h1>
-        <p className="mt-1 text-brand-muted">Baked with love, delivered with care 🧁</p>
-      </div>
-    </div>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+      <Toaster />
+    </QueryClientProvider>
   </React.StrictMode>
 );

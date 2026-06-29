@@ -12,6 +12,7 @@ export default {
           dark: '#8b3a0f',
           light: '#fde8d5',
           accent: '#d4a017',
+          'accent-light': '#fef3c7',
           gold: '#b45309',
           green: '#2d7a4f',
           'green-light': '#d1f0e0',

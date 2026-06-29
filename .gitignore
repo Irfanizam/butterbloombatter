@@ -30,3 +30,6 @@ Thumbs.db
 
 # Vite
 frontend/.vite/
+
+# TypeScript incremental build info
+*.tsbuildinfo
