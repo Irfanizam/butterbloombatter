@@ -4,6 +4,9 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.routes';
+import productRoutes from './routes/product.routes';
+import categoryRoutes from './routes/category.routes';
+import customerRoutes from './routes/customer.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -25,7 +28,10 @@ app.get('/api/health', (_req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-// TODO (PR #2+): products, categories, customers, orders, finance, dashboard
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/customers', customerRoutes);
+// TODO (PR #3): orders, finance, dashboard
 
 // 404 + error handling (must be last)
 app.use(notFoundHandler);
