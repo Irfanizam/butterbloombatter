@@ -9,12 +9,21 @@ interface Props {
 
 export function StoreProductCard({ product, onAdd }: Props) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-brand-lg border border-brand-border-soft bg-white shadow-brand-sm">
-      <div className="h-44 bg-brand-soft">
+    <div className="group flex flex-col overflow-hidden rounded-brand-lg border border-brand-border-soft bg-white shadow-brand-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-brand-lg">
+      <div className="relative h-44 overflow-hidden bg-brand-soft">
         {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         ) : (
           <CookiePlaceholder className="h-full w-full" />
+        )}
+        {product.isFeatured && (
+          <span className="absolute left-3 top-3 rounded-full bg-brand-accent-light px-2.5 py-0.5 text-xs font-bold text-brand-gold shadow-brand-sm">
+            ⭐ Featured
+          </span>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4">
