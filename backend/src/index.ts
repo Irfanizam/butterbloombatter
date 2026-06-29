@@ -10,6 +10,7 @@ import customerRoutes from './routes/customer.routes';
 import orderRoutes from './routes/order.routes';
 import financeRoutes from './routes/finance.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import inquiryRoutes from './routes/inquiry.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 
 // 404 + error handling (must be last)
 app.use(notFoundHandler);

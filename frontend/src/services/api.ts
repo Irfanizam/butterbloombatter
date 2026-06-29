@@ -153,6 +153,18 @@ export const financeApi = {
   remove: (id: number) => api.delete(`/api/finance/${id}`),
 };
 
+export interface InquiryPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+}
+
+export const inquiriesApi = {
+  create: (data: InquiryPayload) =>
+    api.post('/api/inquiries', data).then((r) => r.data as { ok: boolean; customerId: number }),
+};
+
 /** Extracts a human-readable message from an Axios error. */
 export function apiErrorMessage(error: unknown, fallback = 'Something went wrong'): string {
   if (axios.isAxiosError(error)) {
