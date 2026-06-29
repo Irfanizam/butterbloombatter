@@ -5,10 +5,15 @@ import { AuthGuard } from './components/AuthGuard';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { Login } from './pages/Login';
-import { Placeholder } from './pages/Placeholder';
 import { Dashboard } from './pages/admin/Dashboard';
 import { Products } from './pages/admin/Products';
 import { Categories } from './pages/admin/Categories';
+import { Orders } from './pages/admin/Orders';
+import { Customers } from './pages/admin/Customers';
+import { Finance } from './pages/admin/Finance';
+import { Home } from './pages/public/Home';
+import { Menu } from './pages/public/Menu';
+import { Contact } from './pages/public/Contact';
 
 export default function App() {
   useEffect(() => {
@@ -17,24 +22,24 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Public storefront (pages built in Phase 5) */}
+      {/* Public storefront */}
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<Placeholder title="Home" note="Storefront lands in Phase 5." />} />
-        <Route path="/menu" element={<Placeholder title="Menu" note="Storefront lands in Phase 5." />} />
-        <Route path="/contact" element={<Placeholder title="Contact" note="Storefront lands in Phase 5." />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/menu" element={<Menu />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
 
       <Route path="/login" element={<Login />} />
 
-      {/* Admin (auth-guarded; pages built in Phase 4) */}
+      {/* Admin (auth-guarded) */}
       <Route element={<AuthGuard />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/products" element={<Products />} />
           <Route path="/admin/categories" element={<Categories />} />
-          <Route path="/admin/orders" element={<Placeholder title="Orders" note="Built in Phase 4." />} />
-          <Route path="/admin/customers" element={<Placeholder title="Customers" note="Built in Phase 4." />} />
-          <Route path="/admin/finance" element={<Placeholder title="Finance" note="Built in Phase 4." />} />
+          <Route path="/admin/orders" element={<Orders />} />
+          <Route path="/admin/customers" element={<Customers />} />
+          <Route path="/admin/finance" element={<Finance />} />
         </Route>
       </Route>
 
