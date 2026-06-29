@@ -9,6 +9,9 @@ import { Placeholder } from './pages/Placeholder';
 import { Dashboard } from './pages/admin/Dashboard';
 import { Products } from './pages/admin/Products';
 import { Categories } from './pages/admin/Categories';
+import { Orders } from './pages/admin/Orders';
+import { Customers } from './pages/admin/Customers';
+import { Finance } from './pages/admin/Finance';
 
 export default function App() {
   useEffect(() => {
@@ -32,9 +35,9 @@ export default function App() {
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/products" element={<Products />} />
           <Route path="/admin/categories" element={<Categories />} />
-          <Route path="/admin/orders" element={<Placeholder title="Orders" note="Built in Phase 4." />} />
-          <Route path="/admin/customers" element={<Placeholder title="Customers" note="Built in Phase 4." />} />
-          <Route path="/admin/finance" element={<Placeholder title="Finance" note="Built in Phase 4." />} />
+          <Route path="/admin/orders" element={<Orders />} />
+          <Route path="/admin/customers" element={<Customers />} />
+          <Route path="/admin/finance" element={<Finance />} />
         </Route>
       </Route>
 
