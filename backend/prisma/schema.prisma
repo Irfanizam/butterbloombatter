@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(STAFF)
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+  finances     Finance[]
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  emoji    String    @default("🍪")
+  products Product[]
+}
+
+model Product {
+  id            Int         @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  stock         Int         @default(0)
+  imageUrl      String? // Cloudinary URL
+  imagePublicId String? // Cloudinary public_id (for deletion)
+  isAvailable   Boolean     @default(true)
+  isFeatured    Boolean     @default(false)
+  categoryId    Int
+  category      Category    @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  notes     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  orderNumber  String      @unique // e.g. "BBB-2024-0001"
+  customerId   Int
+  customer     Customer    @relation(fields: [customerId], references: [id])
+  staffId      Int
+  staff        User        @relation(fields: [staffId], references: [id])
+  status       OrderStatus @default(PENDING)
+  totalAmount  Float
+  notes        String?
+  deliveryDate DateTime?
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  BAKING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Float
+}
+
+model Finance {
+  id        Int         @id @default(autoincrement())
+  type      FinanceType
+  amount    Float
+  desc      String
+  category  String
+  note      String?
+  date      DateTime
+  staffId   Int
+  staff     User        @relation(fields: [staffId], references: [id])
+  createdAt DateTime    @default(now())
+}
+
+enum FinanceType {
+  IN
+  OUT
+}

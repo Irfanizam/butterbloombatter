@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: butterbloombatter_db
+    environment:
+      POSTGRES_USER: cookie_user
+      POSTGRES_PASSWORD: cookie_pass
+      POSTGRES_DB: butterbloombatter
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:

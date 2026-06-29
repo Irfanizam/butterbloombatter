@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue',
+    Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #fdf8f0;
+  color: #1f1008;
+}

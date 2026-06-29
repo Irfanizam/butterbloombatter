@@ -1,0 +1,15 @@
+{
+  "name": "butterbloombatter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ButterBloomBatter — full-stack cookie business web app",
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "db:up": "cd db && docker compose up -d",
+    "db:down": "cd db && docker compose down",
+    "setup": "cd backend && npm i && cd ../frontend && npm i"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
