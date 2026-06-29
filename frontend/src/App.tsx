@@ -7,6 +7,8 @@ import { PublicLayout } from './components/layout/PublicLayout';
 import { Login } from './pages/Login';
 import { Placeholder } from './pages/Placeholder';
 import { Dashboard } from './pages/admin/Dashboard';
+import { Products } from './pages/admin/Products';
+import { Categories } from './pages/admin/Categories';
 
 export default function App() {
   useEffect(() => {
@@ -28,8 +30,8 @@ export default function App() {
       <Route element={<AuthGuard />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/products" element={<Placeholder title="Products" note="Built in Phase 4." />} />
-          <Route path="/admin/categories" element={<Placeholder title="Categories" note="Built in Phase 4." />} />
+          <Route path="/admin/products" element={<Products />} />
+          <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/orders" element={<Placeholder title="Orders" note="Built in Phase 4." />} />
           <Route path="/admin/customers" element={<Placeholder title="Customers" note="Built in Phase 4." />} />
           <Route path="/admin/finance" element={<Placeholder title="Finance" note="Built in Phase 4." />} />

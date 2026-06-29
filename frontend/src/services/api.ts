@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosProgressEvent, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../store/auth.store';
 import type {
   Category,
@@ -92,8 +92,10 @@ export const productsApi = {
   listPublic: () => api.get('/api/products').then((r) => r.data as Product[]),
   listAdmin: () => api.get('/api/products/admin').then((r) => r.data as Product[]),
   get: (id: number) => api.get(`/api/products/${id}`).then((r) => r.data as Product),
-  create: (data: FormData) => api.post('/api/products', data).then((r) => r.data as Product),
-  update: (id: number, data: FormData) => api.put(`/api/products/${id}`, data).then((r) => r.data as Product),
+  create: (data: FormData, onUploadProgress?: (e: AxiosProgressEvent) => void) =>
+    api.post('/api/products', data, { onUploadProgress }).then((r) => r.data as Product),
+  update: (id: number, data: FormData, onUploadProgress?: (e: AxiosProgressEvent) => void) =>
+    api.put(`/api/products/${id}`, data, { onUploadProgress }).then((r) => r.data as Product),
   remove: (id: number) => api.delete(`/api/products/${id}`),
   setStock: (id: number, stock: number) =>
     api.patch(`/api/products/${id}/stock`, { stock }).then((r) => r.data as Product),
