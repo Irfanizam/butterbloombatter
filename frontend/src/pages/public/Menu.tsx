@@ -1,0 +1,85 @@
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { categoriesApi, productsApi } from '../../services/api';
+import { StoreProductCard } from '../../components/public/StoreProductCard';
+import { InquiryForm } from '../../components/public/InquiryForm';
+import { Spinner } from '../../components/ui/Spinner';
+import type { Product } from '../../types';
+
+export function Menu() {
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['products', 'public'],
+    queryFn: productsApi.listPublic,
+  });
+  const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.list });
+
+  const [activeCat, setActiveCat] = useState<number | 'all'>('all');
+  const [message, setMessage] = useState('');
+
+  const filtered = useMemo(() => {
+    const list = products ?? [];
+    return activeCat === 'all' ? list : list.filter((p) => p.categoryId === activeCat);
+  }, [products, activeCat]);
+
+  const addToInquiry = (p: Product) => {
+    setMessage((m) => (m ? `${m}\n` : '') + `- ${p.name}`);
+  };
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10">
+      <h1 className="mb-2 text-3xl font-bold text-brand-dark">Our Menu</h1>
+      <p className="mb-6 text-brand-muted">Freshly baked, made to order. Browse and send us an inquiry below.</p>
+
+      {/* Category tabs */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        <button
+          onClick={() => setActiveCat('all')}
+          className={`rounded-brand px-3 py-1.5 text-sm font-semibold transition-colors ${
+            activeCat === 'all' ? 'bg-hero text-white' : 'bg-white text-brand-muted hover:bg-brand-soft'
+          }`}
+        >
+          All
+        </button>
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setActiveCat(c.id)}
+            className={`rounded-brand px-3 py-1.5 text-sm font-semibold transition-colors ${
+              activeCat === c.id ? 'bg-hero text-white' : 'bg-white text-brand-muted hover:bg-brand-soft'
+            }`}
+          >
+            {c.emoji} {c.name}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <Spinner className="h-8 w-8" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <p className="py-12 text-center text-brand-faded">No cookies in this category yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((p) => (
+            <StoreProductCard key={p.id} product={p} onAdd={addToInquiry} />
+          ))}
+        </div>
+      )}
+
+      {/* Inquiry form */}
+      <section className="mx-auto mt-14 max-w-2xl rounded-brand-lg border border-brand-border-soft bg-white p-6 shadow-brand">
+        <h2 className="mb-1 text-xl font-bold text-brand-dark">Send an Inquiry</h2>
+        <p className="mb-4 text-sm text-brand-muted">
+          Tell us what you'd like to order and we'll get back to you. Use “Add to Inquiry” on any cookie above.
+        </p>
+        <InquiryForm
+          message={message}
+          onMessageChange={setMessage}
+          showPhone
+          messageLabel="What would you like to order?"
+        />
+      </section>
+    </div>
+  );
+}
