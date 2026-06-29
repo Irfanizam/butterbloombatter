@@ -16,9 +16,16 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+// CLIENT_URL may be a comma-separated allowlist, e.g.
+// "https://butterbloombatter.vercel.app,http://localhost:5173"
+const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL ?? 'http://localhost:5173'],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
