@@ -1,9 +1,11 @@
 export const FINANCE_CATEGORIES = [
-  'Orders',
+  'Cookie Sales',
+  'Custom Orders',
+  'Capital / Top-up',
   'Ingredients',
   'Packaging',
-  'Marketing',
   'Equipment',
+  'Marketing',
   'Utilities',
   'Other Income',
   'Other Expense',

@@ -38,20 +38,26 @@ export const getCustomer = asyncHandler(async (req: Request, res: Response) => {
   res.json({ ...customer, totalSpent });
 });
 
-// POST /api/customers  (protected)
+function parseOptionalDate(value: unknown): Date | null {
+  if (typeof value !== 'string' || !value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid joined date');
+  return d;
+}
+
+// POST /api/customers  (protected) — email is optional (admin-created orders)
 export const createCustomer = asyncHandler(async (req: Request, res: Response) => {
   const body = req.body as Record<string, unknown>;
   const name = typeof body.name === 'string' ? body.name.trim() : '';
-  const email = typeof body.email === 'string' ? body.email.trim() : '';
   if (!name) throw new AppError(400, 'Name is required');
-  if (!email) throw new AppError(400, 'Email is required');
   const customer = await prisma.customer.create({
     data: {
       name,
-      email,
+      email: strOrNull(body.email),
       phone: strOrNull(body.phone),
       address: strOrNull(body.address),
       notes: strOrNull(body.notes),
+      joinedDate: parseOptionalDate(body.joinedDate),
     },
   });
   res.status(201).json(customer);
@@ -63,10 +69,11 @@ export const updateCustomer = asyncHandler(async (req: Request, res: Response) =
   const body = req.body as Record<string, unknown>;
   const data: Prisma.CustomerUpdateInput = {};
   if (typeof body.name === 'string') data.name = body.name.trim();
-  if (typeof body.email === 'string') data.email = body.email.trim();
+  if (body.email !== undefined) data.email = strOrNull(body.email);
   if (body.phone !== undefined) data.phone = strOrNull(body.phone);
   if (body.address !== undefined) data.address = strOrNull(body.address);
   if (body.notes !== undefined) data.notes = strOrNull(body.notes);
+  if (body.joinedDate !== undefined) data.joinedDate = parseOptionalDate(body.joinedDate);
   const customer = await prisma.customer.update({ where: { id }, data });
   res.json(customer);
 });

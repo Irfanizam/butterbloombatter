@@ -1,8 +1,12 @@
 export const BUSINESS = {
   name: 'ButterBloomBatter',
-  tagline: 'Baked with love, delivered with care 🧁',
+  tagline: 'Where slow bakes quietly bloom 🌻',
+  badge: 'Homemade · baked to order',
   story:
-    'ButterBloomBatter started in a small home kitchen with a simple belief: every cookie should taste like it was made for someone you love. We bake in small batches with real butter, quality chocolate, and a whole lot of care — then deliver them warm to your door.',
+    'ButterBloomBatter began with a love for homemade baking and sharing sweet moments. ' +
+    'Inspired by the comforting taste of butter, the gentle bloom of sunflowers, and the ' +
+    'beginning of slow bakes — batter — each cookie is baked fresh in small batches and ' +
+    'packed with extra care, from the oven to your hands.',
   email: 'hello@butterbloombatter.com',
   phone: '+60 12-345 6789',
   address: 'Kuala Lumpur, Malaysia',

@@ -22,5 +22,6 @@ export interface CreateOrderBody {
   customerId?: unknown;
   items?: OrderItemInput[];
   notes?: unknown;
+  tag?: unknown;
   deliveryDate?: unknown;
 }

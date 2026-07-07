@@ -148,6 +148,7 @@ export function Finance() {
                   <td className="px-4 py-3 text-brand-dark">
                     {e.desc}
                     {e.note && <span className="block text-xs text-brand-faded">{e.note}</span>}
+                    {e.customer && <span className="block text-xs text-brand-primary">👤 {e.customer.name}</span>}
                   </td>
                   <td className="px-4 py-3 text-brand-muted">{e.category}</td>
                   <td

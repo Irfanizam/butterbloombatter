@@ -24,10 +24,11 @@ enum Role {
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  emoji    String    @default("🍪")
-  products Product[]
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  emoji     String    @default("🍪")
+  sortOrder Int       @default(0)
+  products  Product[]
 }
 
 model Product {
@@ -48,14 +49,16 @@ model Product {
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  phone     String?
-  address   String?
-  notes     String?
-  orders    Order[]
-  createdAt DateTime @default(now())
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String?   @unique
+  phone      String?
+  address    String?
+  notes      String?
+  joinedDate DateTime? // when they became a customer (distinct from createdAt = record added)
+  orders     Order[]
+  finances   Finance[]
+  createdAt  DateTime  @default(now())
 }
 
 model Order {
@@ -68,6 +71,7 @@ model Order {
   status       OrderStatus @default(PENDING)
   totalAmount  Float
   notes        String?
+  tag          String? // e.g. "Cookie Sales" | "Custom Orders"
   deliveryDate DateTime?
   orderItems   OrderItem[]
   createdAt    DateTime    @default(now())
@@ -94,16 +98,18 @@ model OrderItem {
 }
 
 model Finance {
-  id        Int         @id @default(autoincrement())
-  type      FinanceType
-  amount    Float
-  desc      String
-  category  String
-  note      String?
-  date      DateTime
-  staffId   Int
-  staff     User        @relation(fields: [staffId], references: [id])
-  createdAt DateTime    @default(now())
+  id         Int         @id @default(autoincrement())
+  type       FinanceType
+  amount     Float
+  desc       String
+  category   String
+  note       String?
+  date       DateTime
+  staffId    Int
+  staff      User        @relation(fields: [staffId], references: [id])
+  customerId Int? // optional link to a customer
+  customer   Customer?   @relation(fields: [customerId], references: [id])
+  createdAt  DateTime    @default(now())
 }
 
 enum FinanceType {

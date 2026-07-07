@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiErrorMessage, ordersApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuthStore } from '../../store/auth.store';
 import { formatDate, formatRM } from '../../lib/format';
 import { Drawer } from '../ui/Drawer';
 import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
 import { StatusBadge } from '../ui/Badge';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import type { OrderStatus } from '../../types';
 
 const STATUSES: OrderStatus[] = [
@@ -33,7 +35,9 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
     enabled: orderId !== null,
   });
 
+  const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const [status, setStatus] = useState<OrderStatus>('PENDING');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   useEffect(() => {
     if (order) setStatus(order.status);
   }, [order]);
@@ -50,6 +54,19 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
     onError: (err) => toast.error(apiErrorMessage(err, 'Could not update status')),
   });
 
+  const deleteOrder = useMutation({
+    mutationFn: () => ordersApi.remove(orderId as number),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Order deleted');
+      setConfirmDelete(false);
+      onClose();
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not delete order')),
+  });
+
   return (
     <Drawer open={orderId !== null} onClose={onClose} title="Order Detail">
       {isLoading || !order ? (
@@ -62,6 +79,11 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
             <div>
               <h3 className="text-lg font-bold text-brand-dark">{order.orderNumber}</h3>
               <p className="text-sm text-brand-faded">Placed {formatDate(order.createdAt)}</p>
+              {order.tag && (
+                <span className="mt-1 inline-block rounded-full bg-brand-light px-2 py-0.5 text-xs font-semibold text-brand-dark">
+                  {order.tag}
+                </span>
+              )}
             </div>
             <StatusBadge status={order.status} />
           </div>
@@ -120,8 +142,28 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
               Cancelling restores stock. Last updated {formatDate(order.updatedAt)}.
             </p>
           </div>
+
+          {isAdmin && (
+            <div className="border-t border-brand-border-soft pt-4">
+              <Button variant="danger" className="w-full" onClick={() => setConfirmDelete(true)}>
+                Delete order
+              </Button>
+              <p className="mt-2 text-xs text-brand-faded">
+                Permanently removes this order. Stock is restored (unless already cancelled).
+              </p>
+            </div>
+          )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete order"
+        message={`Delete order ${order?.orderNumber}? This cannot be undone.`}
+        loading={deleteOrder.isPending}
+        onConfirm={() => deleteOrder.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </Drawer>
   );
 }

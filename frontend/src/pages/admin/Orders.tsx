@@ -88,7 +88,10 @@ export function Orders() {
                   className="cursor-pointer border-t border-brand-border-soft hover:bg-brand-soft/50"
                   onClick={() => setDetailId(o.id)}
                 >
-                  <td className="px-4 py-3 font-medium text-brand-dark">{o.orderNumber}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-brand-dark">{o.orderNumber}</div>
+                    {o.tag && <div className="text-xs text-brand-faded">{o.tag}</div>}
+                  </td>
                   <td className="px-4 py-3 text-brand-muted">{o.customer?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-faded">{formatDate(o.createdAt)}</td>
                   <td className="px-4 py-3 text-brand-muted">{o._count?.orderItems ?? 0}</td>

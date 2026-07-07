@@ -90,10 +90,10 @@ export function Customers() {
                   onClick={() => setDetailId(c.id)}
                 >
                   <td className="px-4 py-3 font-medium text-brand-dark">{c.name}</td>
-                  <td className="px-4 py-3 text-brand-muted">{c.email}</td>
+                  <td className="px-4 py-3 text-brand-muted">{c.email ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-muted">{c.phone ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-muted">{c._count?.orders ?? 0}</td>
-                  <td className="px-4 py-3 text-brand-faded">{formatDate(c.createdAt)}</td>
+                  <td className="px-4 py-3 text-brand-faded">{formatDate(c.joinedDate ?? c.createdAt)}</td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
                       <Button size="sm" variant="secondary" onClick={() => openEdit(c)}>
