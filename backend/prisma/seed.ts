@@ -10,11 +10,11 @@ async function seedUsers(): Promise<number> {
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@butterbloombatter.com' },
-    update: {},
+    update: { name: 'Hana' },
     create: {
       email: 'admin@butterbloombatter.com',
       passwordHash: adminPasswordHash,
-      name: 'Admin',
+      name: 'Hana',
       role: Role.ADMIN,
     },
   });
