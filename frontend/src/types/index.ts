@@ -20,6 +20,7 @@ export interface Category {
   id: number;
   name: string;
   emoji: string;
+  sortOrder: number;
   _count?: { products: number };
 }
 
@@ -42,10 +43,11 @@ export interface Product {
 export interface Customer {
   id: number;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   address: string | null;
   notes: string | null;
+  joinedDate: string | null;
   createdAt: string;
   _count?: { orders: number };
   orders?: Order[];
@@ -71,6 +73,7 @@ export interface Order {
   status: OrderStatus;
   totalAmount: number;
   notes: string | null;
+  tag: string | null;
   deliveryDate: string | null;
   orderItems?: OrderItem[];
   _count?: { orderItems: number };
@@ -87,6 +90,8 @@ export interface Finance {
   note: string | null;
   date: string;
   staffId: number;
+  customerId: number | null;
+  customer?: { id: number; name: string } | null;
   createdAt: string;
 }
 

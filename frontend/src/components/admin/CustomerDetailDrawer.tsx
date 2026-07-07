@@ -40,9 +40,12 @@ export function CustomerDetailDrawer({ customerId, onClose, onEdit }: Props) {
         <div className="space-y-5">
           <div>
             <h3 className="text-lg font-bold text-brand-dark">{customer.name}</h3>
-            <p className="text-sm text-brand-muted">{customer.email}</p>
+            {customer.email && <p className="text-sm text-brand-muted">{customer.email}</p>}
             {customer.phone && <p className="text-sm text-brand-muted">{customer.phone}</p>}
             {customer.address && <p className="text-sm text-brand-faded">{customer.address}</p>}
+            <p className="mt-1 text-xs text-brand-faded">
+              Joined {formatDate(customer.joinedDate ?? customer.createdAt)} · Added {formatDate(customer.createdAt)}
+            </p>
             {customer.notes && (
               <p className="mt-2 rounded-brand bg-brand-soft px-3 py-2 text-sm text-brand-muted">
                 {customer.notes}

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiErrorMessage, customersApi, ordersApi, productsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { formatRM } from '../../lib/format';
+import { ORDER_TAGS } from '../../lib/order-tags';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 
@@ -41,6 +42,7 @@ export function OrderFormModal({ open, onClose }: Props) {
   const [items, setItems] = useState<LineItem[]>([{ productId: '', quantity: 1 }]);
   const [deliveryDate, setDeliveryDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [tag, setTag] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +53,7 @@ export function OrderFormModal({ open, onClose }: Props) {
     setItems([{ productId: '', quantity: 1 }]);
     setDeliveryDate('');
     setNotes('');
+    setTag('');
   }, [open]);
 
   const priceOf = (id: number | '') => products.find((p) => p.id === id)?.price ?? 0;
@@ -65,7 +68,10 @@ export function OrderFormModal({ open, onClose }: Props) {
     mutationFn: async () => {
       let resolvedCustomerId = customerId;
       if (newCustomer) {
-        const created = await customersApi.create({ name: newName.trim(), email: newEmail.trim() });
+        const created = await customersApi.create({
+          name: newName.trim(),
+          email: newEmail.trim() || null,
+        });
         resolvedCustomerId = created.id;
       }
       const lineItems = items
@@ -75,6 +81,7 @@ export function OrderFormModal({ open, onClose }: Props) {
         customerId: resolvedCustomerId as number,
         items: lineItems,
         notes: notes || undefined,
+        tag: tag || undefined,
         deliveryDate: deliveryDate || undefined,
       });
     },
@@ -92,7 +99,7 @@ export function OrderFormModal({ open, onClose }: Props) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (newCustomer) {
-      if (!newName.trim() || !newEmail.trim()) return toast.error('New customer needs a name and email');
+      if (!newName.trim()) return toast.error('New customer needs a name');
     } else if (customerId === '') {
       return toast.error('Select a customer');
     }
@@ -134,7 +141,7 @@ export function OrderFormModal({ open, onClose }: Props) {
           {newCustomer ? (
             <div className="grid grid-cols-2 gap-2">
               <input className={inputCls} placeholder="Name" value={newName} onChange={(e) => setNewName(e.target.value)} />
-              <input className={inputCls} placeholder="Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+              <input className={inputCls} placeholder="Email (optional)" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
             </div>
           ) : (
             <select
@@ -145,7 +152,8 @@ export function OrderFormModal({ open, onClose }: Props) {
               <option value="">Select a customer</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} ({c.email})
+                  {c.name}
+                  {c.email ? ` (${c.email})` : ''}
                 </option>
               ))}
             </select>
@@ -196,10 +204,21 @@ export function OrderFormModal({ open, onClose }: Props) {
             <input type="date" className={inputCls} value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-brand-dark">Notes</span>
-            <input className={inputCls} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <span className="mb-1 block text-sm font-semibold text-brand-dark">Tag</span>
+            <select className={inputCls} value={tag} onChange={(e) => setTag(e.target.value)}>
+              <option value="">No tag</option>
+              {ORDER_TAGS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-brand-dark">Notes</span>
+          <input className={inputCls} value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </label>
 
         <div className="flex items-center justify-between rounded-brand bg-brand-soft px-3 py-2">
           <span className="text-sm font-semibold text-brand-dark">Running total</span>

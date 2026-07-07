@@ -120,6 +120,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
         staffId,
         totalAmount: total,
         notes: strOrNull(body.notes),
+        tag: strOrNull(body.tag),
         deliveryDate,
         orderItems: { create: lineItems },
       },
