@@ -18,7 +18,14 @@ const inputCls =
 export function CustomerFormModal({ open, onClose, customer }: Props) {
   const queryClient = useQueryClient();
   const toast = useToast();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '', notes: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    notes: '',
+    joinedDate: '',
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -28,12 +35,22 @@ export function CustomerFormModal({ open, onClose, customer }: Props) {
       phone: customer?.phone ?? '',
       address: customer?.address ?? '',
       notes: customer?.notes ?? '',
+      joinedDate: customer?.joinedDate ? customer.joinedDate.slice(0, 10) : '',
     });
   }, [open, customer]);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      customer ? customersApi.update(customer.id, form) : customersApi.create(form),
+    mutationFn: () => {
+      const payload = {
+        name: form.name.trim(),
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+        address: form.address.trim() || null,
+        notes: form.notes.trim() || null,
+        joinedDate: form.joinedDate ? new Date(form.joinedDate).toISOString() : null,
+      };
+      return customer ? customersApi.update(customer.id, payload) : customersApi.create(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       if (customer) queryClient.invalidateQueries({ queryKey: ['customer', customer.id] });
@@ -49,7 +66,6 @@ export function CustomerFormModal({ open, onClose, customer }: Props) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return toast.error('Name is required');
-    if (!form.email.trim()) return toast.error('Email is required');
     mutation.mutate();
   };
 
@@ -71,9 +87,13 @@ export function CustomerFormModal({ open, onClose, customer }: Props) {
     >
       <form id="customer-form" onSubmit={handleSubmit} className="space-y-3">
         <input className={inputCls} placeholder="Name *" value={form.name} onChange={set('name')} required />
-        <input className={inputCls} type="email" placeholder="Email *" value={form.email} onChange={set('email')} required />
+        <input className={inputCls} type="email" placeholder="Email (optional)" value={form.email} onChange={set('email')} />
         <input className={inputCls} placeholder="Phone" value={form.phone} onChange={set('phone')} />
         <input className={inputCls} placeholder="Address" value={form.address} onChange={set('address')} />
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-brand-dark">Joined date</span>
+          <input className={inputCls} type="date" value={form.joinedDate} onChange={set('joinedDate')} />
+        </label>
         <textarea className={inputCls} rows={2} placeholder="Notes" value={form.notes} onChange={set('notes')} />
       </form>
     </Modal>

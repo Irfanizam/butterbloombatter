@@ -79,6 +79,11 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
             <div>
               <h3 className="text-lg font-bold text-brand-dark">{order.orderNumber}</h3>
               <p className="text-sm text-brand-faded">Placed {formatDate(order.createdAt)}</p>
+              {order.tag && (
+                <span className="mt-1 inline-block rounded-full bg-brand-light px-2 py-0.5 text-xs font-semibold text-brand-dark">
+                  {order.tag}
+                </span>
+              )}
             </div>
             <StatusBadge status={order.status} />
           </div>

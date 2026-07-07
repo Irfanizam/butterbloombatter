@@ -83,8 +83,10 @@ export const categoriesApi = {
   list: () => api.get('/api/categories').then((r) => r.data as Category[]),
   create: (data: { name: string; emoji?: string }) =>
     api.post('/api/categories', data).then((r) => r.data as Category),
-  update: (id: number, data: { name?: string; emoji?: string }) =>
+  update: (id: number, data: { name?: string; emoji?: string; sortOrder?: number }) =>
     api.put(`/api/categories/${id}`, data).then((r) => r.data as Category),
+  reorder: (ids: number[]) =>
+    api.patch('/api/categories/reorder', { ids }).then((r) => r.data as Category[]),
   remove: (id: number) => api.delete(`/api/categories/${id}`),
 };
 
@@ -123,6 +125,7 @@ export interface CreateOrderPayload {
   customerId: number;
   items: { productId: number; quantity: number }[];
   notes?: string;
+  tag?: string;
   deliveryDate?: string;
 }
 

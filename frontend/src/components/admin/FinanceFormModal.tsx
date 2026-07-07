@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiErrorMessage, financeApi } from '../../services/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiErrorMessage, customersApi, financeApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { FINANCE_CATEGORIES } from '../../lib/finance-categories';
 import { Modal } from '../ui/Modal';
@@ -25,12 +25,19 @@ export function FinanceFormModal({ open, onClose, entry }: Props) {
   const queryClient = useQueryClient();
   const toast = useToast();
 
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers', ''],
+    queryFn: () => customersApi.list(),
+    enabled: open,
+  });
+
   const [type, setType] = useState<FinanceType>('IN');
   const [amount, setAmount] = useState('');
   const [desc, setDesc] = useState('');
   const [category, setCategory] = useState<string>(FINANCE_CATEGORIES[0]);
   const [note, setNote] = useState('');
   const [date, setDate] = useState(toDateInput(undefined));
+  const [customerId, setCustomerId] = useState<number | ''>('');
 
   useEffect(() => {
     if (!open) return;
@@ -40,6 +47,7 @@ export function FinanceFormModal({ open, onClose, entry }: Props) {
     setCategory(entry?.category ?? FINANCE_CATEGORIES[0]);
     setNote(entry?.note ?? '');
     setDate(toDateInput(entry?.date));
+    setCustomerId(entry?.customerId ?? '');
   }, [open, entry]);
 
   const mutation = useMutation({
@@ -51,6 +59,7 @@ export function FinanceFormModal({ open, onClose, entry }: Props) {
         category,
         note: note.trim() || undefined,
         date: new Date(date).toISOString(),
+        customerId: customerId === '' ? null : customerId,
       };
       return entry ? financeApi.update(entry.id, payload) : financeApi.create(payload);
     },
@@ -138,6 +147,21 @@ export function FinanceFormModal({ open, onClose, entry }: Props) {
             <input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} />
           </label>
         </div>
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-brand-dark">Customer (optional)</span>
+          <select
+            className={inputCls}
+            value={customerId}
+            onChange={(e) => setCustomerId(e.target.value ? Number(e.target.value) : '')}
+          >
+            <option value="">No customer</option>
+            {customers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </form>
     </Modal>
   );

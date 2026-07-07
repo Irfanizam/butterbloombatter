@@ -37,6 +37,14 @@ function parseType(value: unknown): FinanceType {
   return type as FinanceType;
 }
 
+/** Optional customer id link; null clears it. */
+function parseCustomerId(value: unknown): number | null {
+  if (value === undefined || value === null || value === '') return null;
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) throw new AppError(400, 'Invalid customer');
+  return id;
+}
+
 // GET /api/finance?month=YYYY-MM&type=IN&sort=newest
 export const listFinance = asyncHandler(async (req: Request, res: Response) => {
   const where: Prisma.FinanceWhereInput = {};
@@ -53,7 +61,11 @@ export const listFinance = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const sort = typeof req.query.sort === 'string' ? req.query.sort : 'newest';
-  const entries = await prisma.finance.findMany({ where, orderBy: sortToOrderBy(sort) });
+  const entries = await prisma.finance.findMany({
+    where,
+    orderBy: sortToOrderBy(sort),
+    include: { customer: { select: { id: true, name: true } } },
+  });
   res.json(entries);
 });
 
@@ -91,6 +103,7 @@ export const createFinance = asyncHandler(async (req: Request, res: Response) =>
       note: strOrNull(body.note),
       date,
       staffId: req.user.id,
+      customerId: parseCustomerId(body.customerId),
     },
   });
   res.status(201).json(entry);
@@ -115,6 +128,10 @@ export const updateFinance = asyncHandler(async (req: Request, res: Response) =>
     const date = new Date(body.date as string);
     if (Number.isNaN(date.getTime())) throw new AppError(400, 'Invalid date');
     data.date = date;
+  }
+  if (body.customerId !== undefined) {
+    const customerId = parseCustomerId(body.customerId);
+    data.customer = customerId ? { connect: { id: customerId } } : { disconnect: true };
   }
 
   const entry = await prisma.finance.update({ where: { id }, data });
