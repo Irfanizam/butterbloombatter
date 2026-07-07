@@ -24,6 +24,14 @@ export interface Category {
   _count?: { products: number };
 }
 
+export interface ProductImage {
+  id: number;
+  productId: number;
+  url: string;
+  publicId: string;
+  sortOrder: number;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -36,6 +44,7 @@ export interface Product {
   isFeatured: boolean;
   categoryId: number;
   category?: Category;
+  images?: ProductImage[];
   createdAt: string;
   updatedAt: string;
 }

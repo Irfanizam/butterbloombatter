@@ -102,6 +102,9 @@ export const productsApi = {
   setStock: (id: number, stock: number) =>
     api.patch(`/api/products/${id}/stock`, { stock }).then((r) => r.data as Product),
   toggleFeatured: (id: number) => api.patch(`/api/products/${id}/featured`).then((r) => r.data as Product),
+  addImages: (id: number, data: FormData) =>
+    api.post(`/api/products/${id}/images`, data).then((r) => r.data as Product),
+  removeImage: (id: number, imageId: number) => api.delete(`/api/products/${id}/images/${imageId}`),
 };
 
 export const customersApi = {

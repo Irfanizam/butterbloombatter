@@ -32,7 +32,7 @@ export const listPublicProducts = asyncHandler(async (_req: Request, res: Respon
 // GET /api/products/admin  (protected) — every product
 export const listAdminProducts = asyncHandler(async (_req: Request, res: Response) => {
   const products = await prisma.product.findMany({
-    include: { category: true },
+    include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(products);
@@ -43,12 +43,57 @@ export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id);
   const product = await prisma.product.findUnique({
     where: { id },
-    include: { category: true },
+    include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
   });
   if (!product) {
     throw new AppError(404, 'Product not found');
   }
   res.json(product);
+});
+
+// POST /api/products/:id/images  (ADMIN, multipart `images`) — append gallery photos
+export const addProductImages = asyncHandler(async (req: Request, res: Response) => {
+  const id = parseId(req.params.id);
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) throw new AppError(404, 'Product not found');
+
+  const files = Array.isArray(req.files) ? req.files : [];
+  if (files.length === 0) throw new AppError(400, 'No images uploaded');
+
+  const last = await prisma.productImage.findFirst({
+    where: { productId: id },
+    orderBy: { sortOrder: 'desc' },
+    select: { sortOrder: true },
+  });
+  let sortOrder = (last?.sortOrder ?? -1) + 1;
+
+  for (const file of files) {
+    const uploaded = await uploadImage(file.path);
+    await removeTempFile(file.path);
+    await prisma.productImage.create({
+      data: { productId: id, url: uploaded.url, publicId: uploaded.publicId, sortOrder },
+    });
+    sortOrder += 1;
+  }
+
+  const updated = await prisma.product.findUnique({
+    where: { id },
+    include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
+  });
+  res.status(201).json(updated);
+});
+
+// DELETE /api/products/:id/images/:imageId  (ADMIN)
+export const deleteProductImage = asyncHandler(async (req: Request, res: Response) => {
+  const id = parseId(req.params.id);
+  const imageId = parseId(req.params.imageId);
+  const image = await prisma.productImage.findFirst({ where: { id: imageId, productId: id } });
+  if (!image) throw new AppError(404, 'Image not found');
+  await deleteImage(image.publicId).catch(() => {
+    /* best effort */
+  });
+  await prisma.productImage.delete({ where: { id: imageId } });
+  res.status(204).send();
 });
 
 // POST /api/products  (ADMIN, multipart with optional `image`)
@@ -143,6 +188,13 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   }
   if (existing.imagePublicId) {
     await deleteImage(existing.imagePublicId).catch(() => {
+      /* best effort */
+    });
+  }
+  // Remove gallery images from Cloudinary (DB rows cascade on product delete).
+  const gallery = await prisma.productImage.findMany({ where: { productId: id } });
+  for (const image of gallery) {
+    await deleteImage(image.publicId).catch(() => {
       /* best effort */
     });
   }

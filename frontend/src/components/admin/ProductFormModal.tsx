@@ -1,5 +1,5 @@
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiErrorMessage, productsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { Modal } from '../ui/Modal';
@@ -32,6 +32,38 @@ export function ProductFormModal({ open, onClose, product, categories }: Props) 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Gallery images (edit mode only — a product id is required).
+  const { data: detail } = useQuery({
+    queryKey: ['product-detail', product?.id],
+    queryFn: () => productsApi.get(product!.id),
+    enabled: open && !!product,
+  });
+  const galleryImages = detail?.images ?? product?.images ?? [];
+
+  const addImages = useMutation({
+    mutationFn: (files: FileList) => {
+      const fd = new FormData();
+      Array.from(files).forEach((f) => fd.append('images', f));
+      return productsApi.addImages(product!.id, fd);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-detail', product?.id] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Photos added');
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not add photos')),
+  });
+
+  const removeImage = useMutation({
+    mutationFn: (imageId: number) => productsApi.removeImage(product!.id, imageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-detail', product?.id] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not remove photo')),
+  });
 
   // Reset form whenever the modal opens or the target product changes.
   useEffect(() => {
@@ -219,6 +251,61 @@ export function ProductFormModal({ open, onClose, product, categories }: Props) 
           <div className="h-2 w-full overflow-hidden rounded-full bg-brand-border">
             <div className="h-full bg-brand-primary transition-all" style={{ width: `${progress}%` }} />
           </div>
+        )}
+
+        {/* Gallery (edit mode only — needs a saved product) */}
+        {product ? (
+          <div className="border-t border-brand-border-soft pt-4">
+            <span className="mb-2 block text-sm font-semibold text-brand-dark">
+              Gallery photos (catalogue)
+            </span>
+            {galleryImages.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2">
+                {galleryImages.map((img) => (
+                  <div key={img.id} className="relative">
+                    <img src={img.url} alt="" className="h-20 w-full rounded-brand object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage.mutate(img.id)}
+                      className="absolute right-1 top-1 rounded-full bg-black/60 px-1.5 text-xs text-white hover:bg-black/80"
+                      aria-label="Remove photo"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-brand-faded">
+                No extra photos yet — add some for the storefront catalogue carousel.
+              </p>
+            )}
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.length) addImages.mutate(e.target.files);
+                e.target.value = '';
+              }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="mt-2"
+              loading={addImages.isPending}
+              onClick={() => galleryInputRef.current?.click()}
+            >
+              + Add photos
+            </Button>
+          </div>
+        ) : (
+          <p className="border-t border-brand-border-soft pt-4 text-xs text-brand-faded">
+            Save the product first, then edit it to add gallery photos.
+          </p>
         )}
       </form>
     </Modal>
