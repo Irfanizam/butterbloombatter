@@ -24,26 +24,31 @@ const upload = multer({
   },
 });
 
+function toAppError(err: unknown): AppError {
+  if (err instanceof multer.MulterError) {
+    return new AppError(400, err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 5MB or smaller' : err.message);
+  }
+  if (err instanceof Error) return new AppError(400, err.message);
+  return new AppError(400, 'Image upload failed');
+}
+
 /**
  * Parses an optional single `image` field from multipart/form-data,
  * converting Multer/validation errors into AppError(400).
  */
 export function uploadSingleImage(req: Request, res: Response, next: NextFunction): void {
   upload.single('image')(req, res, (err: unknown) => {
-    if (!err) {
-      next();
-      return;
-    }
-    if (err instanceof multer.MulterError) {
-      const message =
-        err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 5MB or smaller' : err.message;
-      next(new AppError(400, message));
-      return;
-    }
-    if (err instanceof Error) {
-      next(new AppError(400, err.message));
-      return;
-    }
-    next(new AppError(400, 'Image upload failed'));
+    if (err) return next(toAppError(err));
+    next();
+  });
+}
+
+const MAX_GALLERY_FILES = 8;
+
+/** Parses up to 8 files from the `images` field for gallery uploads. */
+export function uploadGalleryImages(req: Request, res: Response, next: NextFunction): void {
+  upload.array('images', MAX_GALLERY_FILES)(req, res, (err: unknown) => {
+    if (err) return next(toAppError(err));
+    next();
   });
 }

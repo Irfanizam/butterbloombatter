@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
+  addProductImages,
   createProduct,
   deleteProduct,
+  deleteProductImage,
   getProduct,
   listAdminProducts,
   listPublicProducts,
@@ -11,7 +13,7 @@ import {
 } from '../controllers/product.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/role.middleware';
-import { uploadSingleImage } from '../middleware/upload.middleware';
+import { uploadGalleryImages, uploadSingleImage } from '../middleware/upload.middleware';
 
 const router = Router();
 
@@ -25,5 +27,9 @@ router.delete('/:id', authenticate, requireAdmin, deleteProduct);
 
 router.patch('/:id/stock', authenticate, updateStock);
 router.patch('/:id/featured', authenticate, toggleFeatured);
+
+// Gallery images
+router.post('/:id/images', authenticate, requireAdmin, uploadGalleryImages, addProductImages);
+router.delete('/:id/images/:imageId', authenticate, requireAdmin, deleteProductImage);
 
 export default router;
