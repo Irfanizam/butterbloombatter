@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { categoriesApi, productsApi } from '../../services/api';
 import { StoreProductCard } from '../../components/public/StoreProductCard';
+import { ProductDetailModal } from '../../components/public/ProductDetailModal';
 import { InquiryForm } from '../../components/public/InquiryForm';
 import { Spinner } from '../../components/ui/Spinner';
 import type { Product } from '../../types';
@@ -15,6 +16,7 @@ export function Menu() {
 
   const [activeCat, setActiveCat] = useState<number | 'all'>('all');
   const [message, setMessage] = useState('');
+  const [detailId, setDetailId] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     const list = products ?? [];
@@ -62,7 +64,12 @@ export function Menu() {
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <StoreProductCard key={p.id} product={p} onAdd={addToInquiry} />
+            <StoreProductCard
+              key={p.id}
+              product={p}
+              onAdd={addToInquiry}
+              onOpen={(prod) => setDetailId(prod.id)}
+            />
           ))}
         </div>
       )}
@@ -80,6 +87,12 @@ export function Menu() {
           messageLabel="What would you like to order?"
         />
       </section>
+
+      <ProductDetailModal
+        productId={detailId}
+        onClose={() => setDetailId(null)}
+        onAddToInquiry={addToInquiry}
+      />
     </div>
   );
 }
