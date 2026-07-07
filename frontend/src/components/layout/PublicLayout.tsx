@@ -46,7 +46,7 @@ export function PublicLayout() {
 
       <footer className="border-t border-brand-border-soft bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-brand-faded">
-          🧁 ButterBloomBatter — Baked with love, delivered with care
+          🌻 ButterBloomBatter — where slow bakes quietly bloom
         </div>
       </footer>
     </div>
