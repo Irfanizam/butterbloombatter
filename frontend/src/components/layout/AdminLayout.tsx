@@ -10,6 +10,7 @@ const navItems = [
   { to: '/admin/orders', label: 'Orders', icon: '📦', end: false },
   { to: '/admin/customers', label: 'Customers', icon: '👥', end: false },
   { to: '/admin/finance', label: 'Finance', icon: '💰', end: false },
+  { to: '/admin/reviews', label: 'Reviews', icon: '⭐', end: false },
 ];
 
 export function AdminLayout() {

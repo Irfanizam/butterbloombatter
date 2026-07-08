@@ -123,6 +123,16 @@ export interface DashboardData {
   monthlyChart: MonthlyTotal[];
 }
 
+export interface Review {
+  id: number;
+  author: string;
+  rating: number;
+  message: string;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: string;
+}
+
 export interface Paginated<T> {
   orders: T[];
   total: number;
