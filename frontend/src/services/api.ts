@@ -10,6 +10,7 @@ import type {
   OrderStatus,
   Paginated,
   Product,
+  Review,
   User,
 } from '../types';
 
@@ -157,6 +158,15 @@ export const financeApi = {
   update: (id: number, data: Partial<Finance>) =>
     api.put(`/api/finance/${id}`, data).then((r) => r.data as Finance),
   remove: (id: number) => api.delete(`/api/finance/${id}`),
+};
+
+export const reviewsApi = {
+  listPublic: () => api.get('/api/reviews').then((r) => r.data as Review[]),
+  listAdmin: () => api.get('/api/reviews/admin').then((r) => r.data as Review[]),
+  create: (data: Partial<Review>) => api.post('/api/reviews', data).then((r) => r.data as Review),
+  update: (id: number, data: Partial<Review>) =>
+    api.put(`/api/reviews/${id}`, data).then((r) => r.data as Review),
+  remove: (id: number) => api.delete(`/api/reviews/${id}`),
 };
 
 export interface InquiryPayload {
