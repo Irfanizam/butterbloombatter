@@ -11,6 +11,7 @@ import { Categories } from './pages/admin/Categories';
 import { Orders } from './pages/admin/Orders';
 import { Customers } from './pages/admin/Customers';
 import { Finance } from './pages/admin/Finance';
+import { Reviews } from './pages/admin/Reviews';
 import { Home } from './pages/public/Home';
 import { Menu } from './pages/public/Menu';
 import { Contact } from './pages/public/Contact';
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/admin/orders" element={<Orders />} />
           <Route path="/admin/customers" element={<Customers />} />
           <Route path="/admin/finance" element={<Finance />} />
+          <Route path="/admin/reviews" element={<Reviews />} />
         </Route>
       </Route>
 

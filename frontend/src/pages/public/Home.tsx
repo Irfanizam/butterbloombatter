@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { productsApi } from '../../services/api';
+import { productsApi, reviewsApi } from '../../services/api';
 import { BUSINESS } from '../../lib/business';
 import { StoreProductCard } from '../../components/public/StoreProductCard';
 import { Spinner } from '../../components/ui/Spinner';
+import { StarRating } from '../../components/ui/StarRating';
 
 const HIGHLIGHTS = [
   {
@@ -29,6 +30,7 @@ export function Home() {
     queryFn: productsApi.listPublic,
   });
   const featured = (products ?? []).filter((p) => p.isFeatured);
+  const { data: reviews = [] } = useQuery({ queryKey: ['reviews'], queryFn: reviewsApi.listPublic });
 
   return (
     <div>
@@ -112,6 +114,28 @@ export function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Testimonials */}
+      {reviews.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pb-4 pt-4">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-brand-dark">What our customers say</h2>
+            <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-brand-primary" />
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {reviews.map((r) => (
+              <div
+                key={r.id}
+                className="rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm"
+              >
+                <StarRating rating={r.rating} />
+                <p className="mt-2 text-brand-muted">“{r.message}”</p>
+                <p className="mt-3 text-sm font-semibold text-brand-dark">— {r.author}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* How to order (PS) */}
       <section className="mx-auto max-w-4xl px-4 pb-4">
