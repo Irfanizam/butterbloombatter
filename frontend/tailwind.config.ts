@@ -5,47 +5,42 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Warm "butter & bloom" palette (from the brand reference)
         brand: {
-          bg: '#fdf8f0',
-          soft: '#f7ede0',
-          primary: '#c2692a',
-          dark: '#8b3a0f',
-          light: '#fde8d5',
-          accent: '#d4a017',
-          'accent-light': '#fef3c7',
-          gold: '#b45309',
-          green: '#2d7a4f',
-          'green-light': '#d1f0e0',
-          red: '#b91c1c',
-          'red-light': '#fee2e2',
-          text: '#1f1008',
-          muted: '#6b5040',
-          faded: '#a08070',
-          border: '#f0d8c0',
-          'border-soft': '#f8ece0',
+          bg: '#fff6e6', // cream
+          soft: '#fcebc4', // butter
+          primary: '#b07a52', // cookie
+          dark: '#6b4226', // cocoa
+          light: '#f8d5d0', // blush
+          accent: '#d4a574', // gold
+          'accent-light': '#fcebc4',
+          gold: '#a9743a',
+          green: '#5a8a4a',
+          'green-light': '#d6e8c5',
+          red: '#c47373',
+          'red-light': '#f6ddd8',
+          text: '#3e2415', // choc
+          muted: '#8a6a4f',
+          faded: '#b09075',
+          border: '#f0ddc4',
+          'border-soft': '#f7ece0',
         },
       },
       backgroundImage: {
-        hero: 'linear-gradient(135deg, #c2692a 0%, #8b3a0f 100%)',
+        hero: 'linear-gradient(135deg, #b07a52 0%, #6b4226 100%)',
       },
       boxShadow: {
-        'brand-sm': '0 1px 2px rgba(139,58,15,0.07)',
-        brand: '0 2px 8px rgba(139,58,15,0.10)',
-        'brand-lg': '0 4px 20px rgba(139,58,15,0.13)',
+        'brand-sm': '0 3px 10px rgba(107,66,38,0.06)',
+        brand: '0 4px 14px rgba(107,66,38,0.10)',
+        'brand-lg': '0 10px 30px rgba(107,66,38,0.13)',
       },
       borderRadius: {
-        brand: '12px',
-        'brand-lg': '18px',
+        brand: '14px',
+        'brand-lg': '22px',
       },
       fontFamily: {
-        sans: [
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'SF Pro Text',
-          'Helvetica Neue',
-          'Roboto',
-          'sans-serif',
-        ],
+        sans: ['Quicksand', '-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', 'sans-serif'],
+        serif: ['Fraunces', 'Georgia', 'serif'],
       },
     },
   },

@@ -29,6 +29,7 @@ export function Orders() {
   const orders = data?.orders ?? [];
 
   const [tab, setTab] = useState<'ALL' | OrderStatus>('ALL');
+  const [sort, setSort] = useState<'newest' | 'oldest' | 'total-desc' | 'total-asc'>('newest');
   const [createOpen, setCreateOpen] = useState(false);
   const [detailId, setDetailId] = useState<number | null>(null);
 
@@ -38,7 +39,14 @@ export function Orders() {
     return c;
   }, [orders]);
 
-  const filtered = tab === 'ALL' ? orders : orders.filter((o) => o.status === tab);
+  const filtered = useMemo(() => {
+    const list = (tab === 'ALL' ? orders : orders.filter((o) => o.status === tab)).slice();
+    if (sort === 'oldest') list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    else if (sort === 'total-desc') list.sort((a, b) => b.totalAmount - a.totalAmount);
+    else if (sort === 'total-asc') list.sort((a, b) => a.totalAmount - b.totalAmount);
+    else list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list;
+  }, [orders, tab, sort]);
 
   return (
     <div className="p-4 md:p-6">
@@ -62,6 +70,20 @@ export function Orders() {
             <span className="ml-1.5 text-xs opacity-80">{counts[t] ?? 0}</span>
           </button>
         ))}
+      </div>
+
+      {/* Sort */}
+      <div className="mb-4">
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          className="rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
+        >
+          <option value="newest">Sort: Newest</option>
+          <option value="oldest">Sort: Oldest</option>
+          <option value="total-desc">Sort: Total ↓</option>
+          <option value="total-asc">Sort: Total ↑</option>
+        </select>
       </div>
 
       {isLoading ? (

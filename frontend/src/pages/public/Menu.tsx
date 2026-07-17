@@ -30,7 +30,9 @@ export function Menu() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="mb-2 text-3xl font-bold text-brand-dark">Our Menu</h1>
-      <p className="mb-6 text-brand-muted">Freshly baked, made to order. Browse and send us an inquiry below.</p>
+      <p className="mb-6 text-brand-muted">
+        Baked fresh, from the oven to your hands. Browse and send us an inquiry below.
+      </p>
 
       {/* Category tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
