@@ -28,6 +28,7 @@ export function Products() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | 'all'>('all');
   const [availability, setAvailability] = useState<AvailabilityFilter>('all');
+  const [sort, setSort] = useState<'newest' | 'name' | 'price-asc' | 'price-desc' | 'stock-asc'>('newest');
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
@@ -65,14 +66,20 @@ export function Products() {
   });
 
   const filtered = useMemo(() => {
-    return (products ?? []).filter((p) => {
+    const list = (products ?? []).filter((p) => {
       if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (categoryFilter !== 'all' && p.categoryId !== categoryFilter) return false;
       if (availability === 'available' && !p.isAvailable) return false;
       if (availability === 'unavailable' && p.isAvailable) return false;
       return true;
     });
-  }, [products, search, categoryFilter, availability]);
+    if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === 'price-asc') list.sort((a, b) => a.price - b.price);
+    else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
+    else if (sort === 'stock-asc') list.sort((a, b) => a.stock - b.stock);
+    else list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list;
+  }, [products, search, categoryFilter, availability, sort]);
 
   const openCreate = () => {
     setEditing(null);
@@ -119,6 +126,17 @@ export function Products() {
           <option value="all">All</option>
           <option value="available">Available</option>
           <option value="unavailable">Unavailable</option>
+        </select>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          className="rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
+        >
+          <option value="newest">Sort: Newest</option>
+          <option value="name">Sort: Name</option>
+          <option value="price-asc">Sort: Price ↑</option>
+          <option value="price-desc">Sort: Price ↓</option>
+          <option value="stock-asc">Sort: Stock ↑</option>
         </select>
       </div>
 
