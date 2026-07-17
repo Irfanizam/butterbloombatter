@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiErrorMessage, customersApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
@@ -16,10 +16,20 @@ export function Customers() {
   const toast = useToast();
 
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<'joined' | 'name' | 'orders'>('joined');
   const { data: customers, isLoading } = useQuery({
     queryKey: ['customers', search],
     queryFn: () => customersApi.list(search || undefined),
   });
+
+  const joinedTime = (c: Customer) => new Date(c.joinedDate ?? c.createdAt).getTime();
+  const sorted = useMemo(() => {
+    const list = [...(customers ?? [])];
+    if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === 'orders') list.sort((a, b) => (b._count?.orders ?? 0) - (a._count?.orders ?? 0));
+    else list.sort((a, b) => joinedTime(b) - joinedTime(a)); // joined date, newest first
+    return list;
+  }, [customers, sort]);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
@@ -58,12 +68,23 @@ export function Customers() {
         }
       />
 
-      <input
-        placeholder="Search by name, email, or phone…"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 w-full rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
-      />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <input
+          placeholder="Search by name, email, or phone…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="min-w-[200px] flex-1 rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
+        />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          className="rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
+        >
+          <option value="joined">Sort: Joined date</option>
+          <option value="name">Sort: Name</option>
+          <option value="orders">Sort: Most orders</option>
+        </select>
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-16">
@@ -83,7 +104,7 @@ export function Customers() {
               </tr>
             </thead>
             <tbody>
-              {(customers ?? []).map((c) => (
+              {sorted.map((c) => (
                 <tr
                   key={c.id}
                   className="cursor-pointer border-t border-brand-border-soft hover:bg-brand-soft/50"
