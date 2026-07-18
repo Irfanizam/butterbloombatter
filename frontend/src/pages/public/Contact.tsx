@@ -36,7 +36,12 @@ export function Contact() {
         {/* Contact form */}
         <div className="rounded-brand-lg border border-brand-border-soft bg-white p-6 shadow-brand-sm">
           <h2 className="mb-4 text-lg font-bold text-brand-dark">Send a Message</h2>
-          <InquiryForm message={message} onMessageChange={setMessage} messageLabel="Your message" />
+          <InquiryForm
+            message={message}
+            onMessageChange={setMessage}
+            showWhatsApp={false}
+            messageLabel="Your message"
+          />
         </div>
       </div>
     </div>

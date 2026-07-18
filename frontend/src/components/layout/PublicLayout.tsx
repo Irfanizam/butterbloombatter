@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { BUSINESS, whatsappLink } from '../../lib/business';
+import { TawkChat } from '../public/TawkChat';
 
 const links = [
   { to: '/', label: 'Home', end: true },
@@ -39,6 +40,8 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
+      {/* Optional live-chat widget (loads only if VITE_TAWK_SRC is set) */}
+      <TawkChat />
       {/* Floating WhatsApp chat button */}
       <a
         href={whatsappLink(`Hi ${BUSINESS.name}! I'd like to ask about your cookies.`)}

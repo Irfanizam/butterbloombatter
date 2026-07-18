@@ -34,7 +34,7 @@ function receiptText(order: Order): string {
     `Status: ${order.status}`,
     order.deliveryDate ? `Delivery: ${formatDate(order.deliveryDate)}` : '',
     '',
-    'Thank you for baking the world sweeter with us! 🌻',
+    `Thank you! ${BUSINESS.tagline}`,
   ];
   return lines.filter((l) => l !== '').join('\n');
 }
@@ -81,7 +81,7 @@ function printReceipt(order: Order): void {
       <table>${rows}</table>
       <div class="total"><span>Total</span><span>${formatRM(order.totalAmount)}</span></div>
       <div class="status">${order.status}</div>
-      <div class="thanks">Baked with butter &amp; love · ${escapeHtml(BUSINESS.name)} 🌻</div>
+      <div class="thanks">${escapeHtml(BUSINESS.tagline)}</div>
     </div>
     <script>window.onload=function(){setTimeout(function(){window.print();},400);}</script>
     </body></html>`;
