@@ -42,7 +42,6 @@ export function PublicLayout() {
 
       {/* Optional live-chat widget (loads only if VITE_TAWK_SRC is set) */}
       <TawkChat />
-
       {/* Floating WhatsApp chat button */}
       <a
         href={whatsappLink(`Hi ${BUSINESS.name}! I'd like to ask about your cookies.`)}
