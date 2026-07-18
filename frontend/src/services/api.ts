@@ -171,7 +171,7 @@ export const reviewsApi = {
 
 export interface InquiryPayload {
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   message: string;
 }

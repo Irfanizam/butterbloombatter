@@ -70,10 +70,6 @@ export function Login() {
           <Button type="submit" loading={submitting} className="w-full">
             Sign in
           </Button>
-
-          <p className="mt-4 rounded-brand bg-brand-soft px-3 py-2 text-center text-xs text-brand-muted">
-            Demo: admin@butterbloombatter.com / admin123
-          </p>
         </form>
       </div>
     </div>
