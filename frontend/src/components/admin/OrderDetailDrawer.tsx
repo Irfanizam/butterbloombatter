@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
 import { StatusBadge } from '../ui/Badge';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ReceiptModal } from './ReceiptModal';
 import type { OrderStatus } from '../../types';
 
 const STATUSES: OrderStatus[] = [
@@ -38,6 +39,7 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
   const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const [status, setStatus] = useState<OrderStatus>('PENDING');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
   useEffect(() => {
     if (order) setStatus(order.status);
   }, [order]);
@@ -143,6 +145,10 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
             </p>
           </div>
 
+          <Button variant="secondary" className="w-full" onClick={() => setShowReceipt(true)}>
+            🧾 Receipt (WhatsApp / print)
+          </Button>
+
           {isAdmin && (
             <div className="border-t border-brand-border-soft pt-4">
               <Button variant="danger" className="w-full" onClick={() => setConfirmDelete(true)}>
@@ -155,6 +161,8 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
           )}
         </div>
       )}
+
+      <ReceiptModal order={showReceipt ? (order ?? null) : null} onClose={() => setShowReceipt(false)} />
 
       <ConfirmDialog
         open={confirmDelete}

@@ -4,12 +4,11 @@ import { authApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 
 const navItems = [
-  { to: '/admin', label: 'Dashboard', icon: '🏠', end: true },
+  { to: '/admin', label: 'Dashboard', icon: '💰', end: true },
   { to: '/admin/products', label: 'Products', icon: '🍪', end: false },
   { to: '/admin/categories', label: 'Categories', icon: '🏷️', end: false },
   { to: '/admin/orders', label: 'Orders', icon: '📦', end: false },
   { to: '/admin/customers', label: 'Customers', icon: '👥', end: false },
-  { to: '/admin/finance', label: 'Finance', icon: '💰', end: false },
   { to: '/admin/reviews', label: 'Reviews', icon: '⭐', end: false },
 ];
 
