@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { BUSINESS, whatsappLink } from '../../lib/business';
 
 const links = [
   { to: '/', label: 'Home', end: true },
@@ -37,6 +38,17 @@ export function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+
+      {/* Floating WhatsApp chat button */}
+      <a
+        href={whatsappLink(`Hi ${BUSINESS.name}! I'd like to ask about your cookies.`)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-2xl shadow-brand-lg transition-transform hover:scale-110"
+      >
+        💬
+      </a>
 
       <footer className="border-t border-brand-border-soft bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-brand-faded">

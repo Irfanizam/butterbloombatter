@@ -1,15 +1,26 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiErrorMessage, financeApi, type FinanceListParams } from '../../services/api';
+import { apiErrorMessage, dashboardApi, financeApi, type FinanceListParams } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
-import { formatDate, formatRM, monthLabel } from '../../lib/format';
+import { useAuthStore } from '../../store/auth.store';
+import { formatDate, formatRM, greeting, monthLabel } from '../../lib/format';
 import { PageHeader } from '../../components/admin/PageHeader';
 import { FinanceFormModal } from '../../components/admin/FinanceFormModal';
 import { MonthlyBars } from '../../components/ui/MonthlyBars';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
+import { StatusBadge } from '../../components/ui/Badge';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import type { Finance as FinanceEntry } from '../../types';
+
+function StatCard({ label, value, tint = 'text-brand-dark' }: { label: string; value: string; tint?: string }) {
+  return (
+    <div className="rounded-brand-lg border border-brand-border-soft bg-white p-4 shadow-brand-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">{label}</p>
+      <p className={`mt-1 text-2xl font-bold ${tint}`}>{value}</p>
+    </div>
+  );
+}
 
 type SortOption = NonNullable<FinanceListParams['sort']>;
 
@@ -20,6 +31,9 @@ export function Finance() {
   const [month, setMonth] = useState<string>('all');
   const [type, setType] = useState<'all' | 'IN' | 'OUT'>('all');
   const [sort, setSort] = useState<SortOption>('newest');
+
+  const user = useAuthStore((s) => s.user);
+  const { data: dash } = useQuery({ queryKey: ['dashboard'], queryFn: dashboardApi.get });
 
   const { data: summary = [] } = useQuery({
     queryKey: ['finance', 'summary'],
@@ -63,6 +77,28 @@ export function Finance() {
 
   return (
     <div className="p-4 md:p-6">
+      {/* Greeting hero */}
+      <div className="mb-4 rounded-brand-lg bg-hero p-6 text-white shadow-brand-lg">
+        <h1 className="text-2xl font-bold">
+          {greeting()}, {user?.name ?? 'there'} 🌻
+        </h1>
+        <p className="mt-1 text-white/80">{formatDate(new Date())}</p>
+      </div>
+
+      {/* Today / month snapshot */}
+      {dash && (
+        <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard label="Orders Today" value={String(dash.todayOrders)} />
+          <StatCard label="Revenue Today" value={formatRM(dash.todayRevenue)} />
+          <StatCard label="Month Revenue" value={formatRM(dash.monthRevenue)} tint="text-brand-green" />
+          <StatCard
+            label="Month Net"
+            value={formatRM(dash.monthNet)}
+            tint={dash.monthNet >= 0 ? 'text-brand-green' : 'text-brand-red'}
+          />
+        </div>
+      )}
+
       <PageHeader
         title="Finance"
         actions={
@@ -100,6 +136,57 @@ export function Finance() {
         <h2 className="mb-4 font-bold text-brand-dark">Last 6 months</h2>
         <MonthlyBars data={summary} />
       </div>
+
+      {/* Operations: recent orders + low stock */}
+      {dash && (
+        <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm">
+            <h2 className="mb-3 font-bold text-brand-dark">Recent Orders</h2>
+            {dash.recentOrders.length === 0 ? (
+              <p className="text-sm text-brand-faded">No orders yet.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <tbody>
+                  {dash.recentOrders.map((o) => (
+                    <tr key={o.id} className="border-t border-brand-border-soft first:border-0">
+                      <td className="py-2 font-medium text-brand-dark">{o.orderNumber}</td>
+                      <td className="py-2 text-brand-muted">{o.customer?.name ?? '—'}</td>
+                      <td className="py-2 text-brand-muted">{formatRM(o.totalAmount)}</td>
+                      <td className="py-2 text-right">
+                        <StatusBadge status={o.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm">
+            <h2 className="mb-3 font-bold text-brand-dark">Low Stock (&lt; 10)</h2>
+            {dash.lowStockProducts.length === 0 ? (
+              <p className="text-sm text-brand-faded">Nothing low on stock. 🎉</p>
+            ) : (
+              <ul className="space-y-2">
+                {dash.lowStockProducts.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between text-sm">
+                    <span className="text-brand-dark">{p.name}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        p.stock <= 0
+                          ? 'bg-brand-red-light text-brand-red'
+                          : 'bg-brand-accent-light text-brand-gold'
+                      }`}
+                    >
+                      {p.stock} left
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-3 flex flex-wrap gap-2">
