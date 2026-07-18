@@ -5,7 +5,6 @@ import { AuthGuard } from './components/AuthGuard';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { Login } from './pages/Login';
-import { Dashboard } from './pages/admin/Dashboard';
 import { Products } from './pages/admin/Products';
 import { Categories } from './pages/admin/Categories';
 import { Orders } from './pages/admin/Orders';
@@ -35,12 +34,12 @@ export default function App() {
       {/* Admin (auth-guarded) */}
       <Route element={<AuthGuard />}>
         <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin" element={<Finance />} />
+          <Route path="/admin/finance" element={<Navigate to="/admin" replace />} />
           <Route path="/admin/products" element={<Products />} />
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/orders" element={<Orders />} />
           <Route path="/admin/customers" element={<Customers />} />
-          <Route path="/admin/finance" element={<Finance />} />
           <Route path="/admin/reviews" element={<Reviews />} />
         </Route>
       </Route>
