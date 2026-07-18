@@ -211,6 +211,7 @@ export function Products() {
         onClose={() => setFormOpen(false)}
         product={editing}
         categories={categories}
+        onCreated={(p) => setEditing(p)}
       />
 
       <ConfirmDialog

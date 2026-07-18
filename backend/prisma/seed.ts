@@ -5,14 +5,14 @@ import { OrderStatus, PrismaClient, Role } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedUsers(): Promise<number> {
-  const adminPasswordHash = await bcrypt.hash('admin123', 10);
+  const adminPasswordHash = await bcrypt.hash('hana123', 10);
   const staffPasswordHash = await bcrypt.hash('staff123', 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@butterbloombatter.com' },
+    where: { email: 'hana@butterbloombatter.com' },
     update: { name: 'Hana' },
     create: {
-      email: 'admin@butterbloombatter.com',
+      email: 'hana@butterbloombatter.com',
       passwordHash: adminPasswordHash,
       name: 'Hana',
       role: Role.ADMIN,

@@ -104,9 +104,8 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
       const product = await tx.product.findUnique({ where: { id: productId } });
       if (!product) throw new AppError(400, `Product ${productId} does not exist`);
-      if (product.stock < quantity) {
-        throw new AppError(409, `Insufficient stock for ${product.name}`);
-      }
+      // Pre-order business: orders are never blocked by stock. Stock still
+      // decrements (may go negative) as a bake-to-order backlog indicator.
       total += product.price * quantity;
       lineItems.push({ productId, quantity, unitPrice: product.price });
     }

@@ -54,7 +54,7 @@ export function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mb-4 w-full rounded-brand border border-brand-border px-3 py-2.5 text-sm outline-none focus:border-brand-primary"
-            placeholder="admin@butterbloombatter.com"
+            placeholder="hana@butterbloombatter.com"
           />
 
           <label className="mb-1 block text-sm font-semibold text-brand-dark">Password</label>
@@ -70,10 +70,6 @@ export function Login() {
           <Button type="submit" loading={submitting} className="w-full">
             Sign in
           </Button>
-
-          <p className="mt-4 rounded-brand bg-brand-soft px-3 py-2 text-center text-xs text-brand-muted">
-            Demo: admin@butterbloombatter.com / admin123
-          </p>
         </form>
       </div>
     </div>

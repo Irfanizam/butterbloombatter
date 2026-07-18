@@ -30,12 +30,6 @@ export function PublicLayout() {
                 {l.label}
               </NavLink>
             ))}
-            <Link
-              to="/login"
-              className="ml-2 rounded-brand bg-brand-primary px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
-            >
-              Admin
-            </Link>
           </nav>
         </div>
       </header>
@@ -47,6 +41,9 @@ export function PublicLayout() {
       <footer className="border-t border-brand-border-soft bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-brand-faded">
           🌻 ButterBloomBatter — where slow bakes quietly bloom
+          <Link to="/login" className="ml-2 text-brand-faded/70 hover:text-brand-muted">
+            · Staff
+          </Link>
         </div>
       </footer>
     </div>

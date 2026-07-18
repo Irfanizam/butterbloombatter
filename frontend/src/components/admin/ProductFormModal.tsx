@@ -15,9 +15,10 @@ interface Props {
   onClose: () => void;
   product: Product | null; // null = create
   categories: Category[];
+  onCreated?: (product: Product) => void; // switch to edit mode after create (for gallery)
 }
 
-export function ProductFormModal({ open, onClose, product, categories }: Props) {
+export function ProductFormModal({ open, onClose, product, categories, onCreated }: Props) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -118,11 +119,17 @@ export function ProductFormModal({ open, onClose, product, categories }: Props) 
         ? productsApi.update(product.id, fd, onProgress)
         : productsApi.create(fd, onProgress);
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.success(product ? 'Product updated' : 'Product created');
-      onClose();
+      if (!product && onCreated) {
+        // Keep the modal open in edit mode so photos can be added right away.
+        toast.success('Product created — now add gallery photos below 📷');
+        onCreated(saved);
+      } else {
+        toast.success(product ? 'Product updated' : 'Product created');
+        onClose();
+      }
     },
     onError: (err) => toast.error(apiErrorMessage(err, 'Could not save product')),
   });
@@ -195,14 +202,13 @@ export function ProductFormModal({ open, onClose, product, categories }: Props) 
               required
             />
           </Field>
-          <Field label="Stock Quantity *">
+          <Field label="Stock (optional · pre-order)">
             <input
               className={inputCls}
               type="number"
-              min="0"
               value={stock}
               onChange={(e) => setStock(e.target.value)}
-              required
+              placeholder="Leave blank for pre-order"
             />
           </Field>
         </div>
