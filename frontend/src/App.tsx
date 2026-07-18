@@ -1,6 +1,14 @@
 import { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { bootstrapAuth } from './services/api';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 import { AuthGuard } from './components/AuthGuard';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
@@ -21,7 +29,9 @@ export default function App() {
   }, []);
 
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       {/* Public storefront */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
@@ -45,6 +55,7 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

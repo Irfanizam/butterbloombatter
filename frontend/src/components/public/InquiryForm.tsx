@@ -9,6 +9,7 @@ interface Props {
   message: string;
   onMessageChange: (value: string) => void;
   showPhone?: boolean;
+  showWhatsApp?: boolean;
   messageLabel?: string;
 }
 
@@ -19,6 +20,7 @@ export function InquiryForm({
   message,
   onMessageChange,
   showPhone = false,
+  showWhatsApp = true,
   messageLabel = 'Message',
 }: Props) {
   const toast = useToast();
@@ -76,19 +78,28 @@ export function InquiryForm({
       />
 
       {/* WhatsApp first — orders are confirmed over chat */}
-      <button
-        type="button"
-        onClick={openWhatsApp}
-        className="flex w-full items-center justify-center gap-2 rounded-brand bg-[#25D366] px-4 py-3 font-semibold text-white transition-transform hover:scale-[1.01]"
-      >
-        <span className="text-lg">💬</span> Chat &amp; order on WhatsApp
-      </button>
-      <p className="text-center text-xs text-brand-faded">
-        We confirm every order over WhatsApp — quickest way to reach us.
-      </p>
+      {showWhatsApp && (
+        <>
+          <button
+            type="button"
+            onClick={openWhatsApp}
+            className="flex w-full items-center justify-center gap-2 rounded-brand bg-[#25D366] px-4 py-3 font-semibold text-white transition-transform hover:scale-[1.01]"
+          >
+            <span className="text-lg">💬</span> Chat &amp; order on WhatsApp
+          </button>
+          <p className="text-center text-xs text-brand-faded">
+            We confirm every order over WhatsApp — quickest way to reach us.
+          </p>
+        </>
+      )}
 
-      <Button type="submit" variant="secondary" loading={mutation.isPending} className="w-full">
-        Or leave an inquiry
+      <Button
+        type="submit"
+        variant={showWhatsApp ? 'secondary' : 'primary'}
+        loading={mutation.isPending}
+        className="w-full"
+      >
+        {showWhatsApp ? 'Or leave an inquiry' : 'Send inquiry'}
       </Button>
     </form>
   );

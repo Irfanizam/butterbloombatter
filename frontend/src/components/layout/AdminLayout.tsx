@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import { authApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
@@ -58,6 +58,13 @@ export function AdminLayout() {
         </nav>
 
         <div className="border-t border-brand-border-soft p-2">
+          <Link
+            to="/"
+            className="flex w-full items-center gap-3 rounded-brand px-3 py-2.5 text-sm font-semibold text-brand-muted transition-colors hover:bg-brand-soft"
+          >
+            <span className="text-lg">🏠</span>
+            <span className="hidden md:inline">View storefront</span>
+          </Link>
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-brand px-3 py-2.5 text-sm font-semibold text-brand-muted transition-colors hover:bg-brand-red-light hover:text-brand-red"

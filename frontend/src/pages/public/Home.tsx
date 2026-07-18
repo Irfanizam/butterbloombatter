@@ -13,14 +13,14 @@ const HIGHLIGHTS = [
     text: 'Made with carefully selected ingredients for the best flavour.',
   },
   {
+    icon: '🍪',
+    title: 'Homemade · Baked fresh',
+    text: 'Homemade cookies, baked fresh from the oven to your hands.',
+  },
+  {
     icon: '🎀',
     title: 'Custom orders',
     text: 'Personalised packaging for any occasion.',
-  },
-  {
-    icon: '🍪',
-    title: 'Baked fresh',
-    text: 'Homemade cookies, fresh from the oven to your hands — no same-day delivery.',
   },
 ];
 
@@ -44,7 +44,7 @@ export function Home() {
 
         <div className="relative mx-auto max-w-3xl">
           <span className="inline-block rounded-full bg-white/15 px-4 py-1 text-sm font-semibold backdrop-blur">
-            🌻 {BUSINESS.badge}
+            {BUSINESS.badge}
           </span>
           <h1 className="mt-5 text-4xl font-extrabold tracking-tight drop-shadow-sm sm:text-6xl">
             {BUSINESS.name}
@@ -140,14 +140,15 @@ export function Home() {
       {/* How to order (PS) */}
       <section className="mx-auto max-w-4xl px-4 pb-4">
         <div className="rounded-brand-lg border border-brand-border bg-brand-light p-6 text-center">
-          <h2 className="text-xl font-bold text-brand-dark">Can I order? 🌻</h2>
+          <h2 className="text-xl font-bold text-brand-dark">How to order? 🧈</h2>
           <p className="mx-auto mt-2 max-w-xl text-brand-muted">
-            Yes! We bake to order. Browse the menu, then message us on the{' '}
+            Browse the menu, then message us on the{' '}
             <Link to="/contact" className="font-semibold text-brand-primary hover:text-brand-dark">
               Contact
             </Link>{' '}
-            page (or WhatsApp) with what you'd like — we'll bake it fresh and arrange delivery or pickup.
-            Please note there's no same-day delivery, as everything is made from scratch.
+            page (or WhatsApp) with what you'd like. Every order is baked fresh, and we'll arrange
+            delivery or pickup. Please note that same-day delivery isn't available, as each batch is
+            baked after your order is placed.
           </p>
         </div>
       </section>

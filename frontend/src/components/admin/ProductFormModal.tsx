@@ -44,9 +44,9 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
   const galleryImages = detail?.images ?? product?.images ?? [];
 
   const addImages = useMutation({
-    mutationFn: (files: FileList) => {
+    mutationFn: (files: File[]) => {
       const fd = new FormData();
-      Array.from(files).forEach((f) => fd.append('images', f));
+      files.forEach((f) => fd.append('images', f));
       return productsApi.addImages(product!.id, fd);
     },
     onSuccess: () => {
@@ -293,7 +293,10 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
               multiple
               className="hidden"
               onChange={(e) => {
-                if (e.target.files?.length) addImages.mutate(e.target.files);
+                // Materialise the FileList into an array BEFORE clearing the
+                // input, otherwise the live FileList empties before upload.
+                const files = e.target.files ? Array.from(e.target.files) : [];
+                if (files.length) addImages.mutate(files);
                 e.target.value = '';
               }}
             />

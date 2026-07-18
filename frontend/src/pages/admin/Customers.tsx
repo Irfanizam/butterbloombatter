@@ -110,7 +110,14 @@ export function Customers() {
                   className="cursor-pointer border-t border-brand-border-soft hover:bg-brand-soft/50"
                   onClick={() => setDetailId(c.id)}
                 >
-                  <td className="px-4 py-3 font-medium text-brand-dark">{c.name}</td>
+                  <td className="px-4 py-3 font-medium text-brand-dark">
+                    {c.name}
+                    {c.notes?.startsWith('[Inquiry]') && (
+                      <span className="ml-2 rounded-full bg-brand-light px-2 py-0.5 text-xs font-semibold text-brand-primary">
+                        💬 inquiry
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-brand-muted">{c.email ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-muted">{c.phone ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-muted">{c._count?.orders ?? 0}</td>
