@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BUSINESS } from '../../lib/business';
+import { BUSINESS, whatsappLink } from '../../lib/business';
 import { InquiryForm } from '../../components/public/InquiryForm';
 
 export function Contact() {
@@ -15,14 +15,22 @@ export function Contact() {
         <div className="rounded-brand-lg border border-brand-border-soft bg-white p-6 shadow-brand-sm">
           <h2 className="mb-4 text-lg font-bold text-brand-dark">{BUSINESS.name}</h2>
           <ul className="space-y-3 text-sm text-brand-muted">
-            <li>📧 {BUSINESS.email}</li>
             <li>📞 {BUSINESS.phone}</li>
             <li>📍 {BUSINESS.address}</li>
             <li>🕒 {BUSINESS.hours}</li>
           </ul>
-          <div className="mt-6 rounded-brand bg-hero p-4 text-white">
-            <p className="text-sm">{BUSINESS.tagline}</p>
-          </div>
+          <a
+            href={whatsappLink(`Hi ${BUSINESS.name}! I'd like to order some cookies.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 flex items-center justify-center gap-2 rounded-brand bg-[#25D366] px-4 py-3 font-semibold text-white transition-transform hover:scale-[1.01]"
+          >
+            <span className="text-lg">💬</span> Message us on WhatsApp
+          </a>
+          <p className="mt-3 text-xs text-brand-faded">
+            We take and confirm all orders over WhatsApp chat. Send your name, email (optional),
+            and what you'd like — we'll sort out the rest.
+          </p>
         </div>
 
         {/* Contact form */}

@@ -173,8 +173,8 @@ export function OrderFormModal({ open, onClose }: Props) {
                 >
                   <option value="">Select product</option>
                   {products.map((p) => (
-                    <option key={p.id} value={p.id} disabled={!p.isAvailable || p.stock === 0}>
-                      {p.name} — {formatRM(p.price)} ({p.stock} left)
+                    <option key={p.id} value={p.id} disabled={!p.isAvailable}>
+                      {p.name} — {formatRM(p.price)}
                     </option>
                   ))}
                 </select>
