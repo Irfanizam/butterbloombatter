@@ -91,6 +91,13 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
     if (Number.isNaN(deliveryDate.getTime())) throw new AppError(400, 'Invalid delivery date');
   }
 
+  // Optional "placed" date — lets admin back-date manually entered past orders.
+  let placedDate: Date | null = null;
+  if (typeof body.placedDate === 'string' && body.placedDate) {
+    placedDate = new Date(body.placedDate);
+    if (Number.isNaN(placedDate.getTime())) throw new AppError(400, 'Invalid order date');
+  }
+
   const order = await prisma.$transaction(async (tx) => {
     const customer = await tx.customer.findUnique({ where: { id: customerId } });
     if (!customer) throw new AppError(400, 'Customer does not exist');
@@ -110,7 +117,8 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
       lineItems.push({ productId, quantity, unitPrice: product.price });
     }
 
-    const orderNumber = await generateOrderNumber(tx, new Date().getFullYear());
+    const year = (placedDate ?? new Date()).getFullYear();
+    const orderNumber = await generateOrderNumber(tx, year);
 
     const created = await tx.order.create({
       data: {
@@ -121,6 +129,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
         notes: strOrNull(body.notes),
         tag: strOrNull(body.tag),
         deliveryDate,
+        ...(placedDate ? { createdAt: placedDate } : {}),
         orderItems: { create: lineItems },
       },
       include: { orderItems: { include: { product: true } }, customer: true },
@@ -166,6 +175,35 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
     });
   });
 
+  res.json(order);
+});
+
+// PATCH /api/orders/:id — edit placed date, delivery date, or tag
+export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
+  const id = parseId(req.params.id);
+  const body = req.body as Record<string, unknown>;
+  const data: Prisma.OrderUpdateInput = {};
+
+  if (body.placedDate !== undefined) {
+    const d = new Date(body.placedDate as string);
+    if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid order date');
+    data.createdAt = d;
+  }
+  if (body.deliveryDate !== undefined) {
+    if (!body.deliveryDate) data.deliveryDate = null;
+    else {
+      const d = new Date(body.deliveryDate as string);
+      if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid delivery date');
+      data.deliveryDate = d;
+    }
+  }
+  if (body.tag !== undefined) data.tag = strOrNull(body.tag);
+
+  const order = await prisma.order.update({
+    where: { id },
+    data,
+    include: { orderItems: { include: { product: true } }, customer: true },
+  });
   res.json(order);
 });
 

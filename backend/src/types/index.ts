@@ -24,4 +24,5 @@ export interface CreateOrderBody {
   notes?: unknown;
   tag?: unknown;
   deliveryDate?: unknown;
+  placedDate?: unknown;
 }

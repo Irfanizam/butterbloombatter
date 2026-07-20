@@ -16,7 +16,7 @@ const STATUSES: OrderStatus[] = [
   'PENDING',
   'CONFIRMED',
   'BAKING',
-  'READY',
+  'PACKED',
   'DELIVERED',
   'CANCELLED',
 ];
@@ -38,11 +38,26 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
 
   const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const [status, setStatus] = useState<OrderStatus>('PENDING');
+  const [placedDate, setPlacedDate] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   useEffect(() => {
-    if (order) setStatus(order.status);
+    if (order) {
+      setStatus(order.status);
+      setPlacedDate(order.createdAt.slice(0, 10));
+    }
   }, [order]);
+
+  const updateDate = useMutation({
+    mutationFn: () => ordersApi.update(orderId as number, { placedDate }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success('Order date updated');
+    },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not update date')),
+  });
 
   const updateStatus = useMutation({
     mutationFn: () => ordersApi.setStatus(orderId as number, status),
@@ -142,6 +157,28 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
             </div>
             <p className="mt-2 text-xs text-brand-faded">
               Cancelling restores stock. Last updated {formatDate(order.updatedAt)}.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="mb-2 font-semibold text-brand-dark">Order date (placed)</h4>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={placedDate}
+                onChange={(e) => setPlacedDate(e.target.value)}
+                className="flex-1 rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
+              />
+              <Button
+                onClick={() => updateDate.mutate()}
+                loading={updateDate.isPending}
+                disabled={placedDate === order.createdAt.slice(0, 10)}
+              >
+                Save
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-brand-faded">
+              Back-date manually entered orders so they land in the right month.
             </p>
           </div>
 
