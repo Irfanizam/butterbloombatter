@@ -131,6 +131,7 @@ export interface CreateOrderPayload {
   notes?: string;
   tag?: string;
   deliveryDate?: string;
+  placedDate?: string;
 }
 
 export const ordersApi = {
@@ -140,6 +141,8 @@ export const ordersApi = {
   create: (data: CreateOrderPayload) => api.post('/api/orders', data).then((r) => r.data as Order),
   setStatus: (id: number, status: OrderStatus) =>
     api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data as Order),
+  update: (id: number, data: { placedDate?: string; deliveryDate?: string | null; tag?: string | null }) =>
+    api.patch(`/api/orders/${id}`, data).then((r) => r.data as Order),
   remove: (id: number) => api.delete(`/api/orders/${id}`),
 };
 

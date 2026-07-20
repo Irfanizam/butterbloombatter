@@ -113,80 +113,57 @@ export function Finance() {
         }
       />
 
-      {/* Overview cards */}
+      {/* Ledger overview (recorded finance entries — respects the filters below) */}
       <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-brand-lg border border-brand-border-soft bg-white p-4 shadow-brand-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">Total In</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">Recorded income</p>
           <p className="mt-1 text-2xl font-bold text-brand-green">{formatRM(totals.income)}</p>
         </div>
         <div className="rounded-brand-lg border border-brand-border-soft bg-white p-4 shadow-brand-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">Total Out</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">Recorded expenses</p>
           <p className="mt-1 text-2xl font-bold text-brand-red">{formatRM(totals.expense)}</p>
         </div>
         <div className="rounded-brand-lg border border-brand-border-soft bg-white p-4 shadow-brand-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">Net</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-faded">Recorded net</p>
           <p className={`mt-1 text-2xl font-bold ${totals.net >= 0 ? 'text-brand-gold' : 'text-brand-red'}`}>
             {formatRM(totals.net)}
           </p>
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Chart — sales (orders) vs expenses (finance out) */}
       <div className="mb-4 rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm">
-        <h2 className="mb-4 font-bold text-brand-dark">Last 6 months</h2>
-        <MonthlyBars data={summary} />
+        <h2 className="mb-4 font-bold text-brand-dark">Sales vs expenses · last 6 months</h2>
+        <MonthlyBars data={dash?.monthlyChart ?? []} />
       </div>
 
-      {/* Operations: recent orders + low stock */}
+      {/* Recent orders */}
       {dash && (
-        <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm">
-            <h2 className="mb-3 font-bold text-brand-dark">Recent Orders</h2>
-            {dash.recentOrders.length === 0 ? (
-              <p className="text-sm text-brand-faded">No orders yet.</p>
-            ) : (
-              <table className="w-full text-sm">
-                <tbody>
-                  {dash.recentOrders.map((o) => (
-                    <tr key={o.id} className="border-t border-brand-border-soft first:border-0">
-                      <td className="py-2 font-medium text-brand-dark">{o.orderNumber}</td>
-                      <td className="py-2 text-brand-muted">{o.customer?.name ?? '—'}</td>
-                      <td className="py-2 text-brand-muted">{formatRM(o.totalAmount)}</td>
-                      <td className="py-2 text-right">
-                        <StatusBadge status={o.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          <div className="rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm">
-            <h2 className="mb-3 font-bold text-brand-dark">Low Stock (&lt; 10)</h2>
-            {dash.lowStockProducts.length === 0 ? (
-              <p className="text-sm text-brand-faded">Nothing low on stock. 🎉</p>
-            ) : (
-              <ul className="space-y-2">
-                {dash.lowStockProducts.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between text-sm">
-                    <span className="text-brand-dark">{p.name}</span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        p.stock <= 0
-                          ? 'bg-brand-red-light text-brand-red'
-                          : 'bg-brand-accent-light text-brand-gold'
-                      }`}
-                    >
-                      {p.stock} left
-                    </span>
-                  </li>
+        <div className="mb-4 rounded-brand-lg border border-brand-border-soft bg-white p-5 shadow-brand-sm">
+          <h2 className="mb-3 font-bold text-brand-dark">Recent Orders</h2>
+          {dash.recentOrders.length === 0 ? (
+            <p className="text-sm text-brand-faded">No orders yet.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <tbody>
+                {dash.recentOrders.map((o) => (
+                  <tr key={o.id} className="border-t border-brand-border-soft first:border-0">
+                    <td className="py-2 font-medium text-brand-dark">{o.orderNumber}</td>
+                    <td className="py-2 text-brand-muted">{o.customer?.name ?? '—'}</td>
+                    <td className="py-2 text-brand-muted">{formatRM(o.totalAmount)}</td>
+                    <td className="py-2 text-right">
+                      <StatusBadge status={o.status} />
+                    </td>
+                  </tr>
                 ))}
-              </ul>
-            )}
-          </div>
+              </tbody>
+            </table>
+          )}
         </div>
       )}
+
+      {/* Ledger — recorded finance entries (expenses + manual income) */}
+      <h2 className="mb-2 mt-6 font-bold text-brand-dark">Ledger entries</h2>
 
       {/* Filters */}
       <div className="mb-3 flex flex-wrap gap-2">

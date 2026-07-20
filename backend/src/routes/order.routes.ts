@@ -4,6 +4,7 @@ import {
   deleteOrder,
   getOrder,
   listOrders,
+  updateOrder,
   updateOrderStatus,
 } from '../controllers/order.controller';
 import { authenticate } from '../middleware/auth.middleware';
@@ -15,6 +16,7 @@ router.get('/', authenticate, listOrders);
 router.get('/:id', authenticate, getOrder);
 router.post('/', authenticate, createOrder);
 router.patch('/:id/status', authenticate, updateOrderStatus);
+router.patch('/:id', authenticate, updateOrder);
 router.delete('/:id', authenticate, requireAdmin, deleteOrder);
 
 export default router;

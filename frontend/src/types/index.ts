@@ -3,7 +3,7 @@ export type OrderStatus =
   | 'PENDING'
   | 'CONFIRMED'
   | 'BAKING'
-  | 'READY'
+  | 'PACKED'
   | 'DELIVERED'
   | 'CANCELLED';
 export type FinanceType = 'IN' | 'OUT';

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { productsApi, reviewsApi } from '../../services/api';
@@ -5,6 +6,7 @@ import { BUSINESS } from '../../lib/business';
 import { StoreProductCard } from '../../components/public/StoreProductCard';
 import { Spinner } from '../../components/ui/Spinner';
 import { StarRating } from '../../components/ui/StarRating';
+import { Modal } from '../../components/ui/Modal';
 
 const HIGHLIGHTS = [
   {
@@ -31,6 +33,7 @@ export function Home() {
   });
   const featured = (products ?? []).filter((p) => p.isFeatured);
   const { data: reviews = [] } = useQuery({ queryKey: ['reviews'], queryFn: reviewsApi.listPublic });
+  const [faqOpen, setFaqOpen] = useState(false);
 
   return (
     <div>
@@ -57,14 +60,15 @@ export function Home() {
             >
               Browse Menu
             </Link>
-            <Link
-              to="/contact"
+            <button
+              type="button"
+              onClick={() => setFaqOpen(true)}
               className="rounded-brand border border-white/60 px-7 py-3 font-semibold text-white transition-colors hover:bg-white/10"
             >
-              How to Order
-            </Link>
+              How to pre-order
+            </button>
           </div>
-          <p className="mt-6 text-sm text-white/70">Pure butter · Small batches · Baked fresh</p>
+          <p className="mt-6 text-sm lowercase text-white/70">pure butter · small batches · cookie flavours</p>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 h-10 rounded-t-[50%] bg-brand-bg" />
@@ -137,22 +141,6 @@ export function Home() {
         </section>
       )}
 
-      {/* How to order (PS) */}
-      <section className="mx-auto max-w-4xl px-4 pb-4">
-        <div className="rounded-brand-lg border border-brand-border bg-brand-light p-6 text-center">
-          <h2 className="text-xl font-bold text-brand-dark">How to order? 🧈</h2>
-          <p className="mx-auto mt-2 max-w-xl text-brand-muted">
-            Browse the menu, then message us on the{' '}
-            <Link to="/contact" className="font-semibold text-brand-primary hover:text-brand-dark">
-              Contact
-            </Link>{' '}
-            page (or WhatsApp) with what you'd like. Every order is baked fresh, and we'll arrange
-            delivery or pickup. Please note that same-day delivery isn't available, as each batch is
-            baked after your order is placed.
-          </p>
-        </div>
-      </section>
-
       {/* Our Story */}
       <section className="bg-brand-soft px-4 py-16">
         <div className="mx-auto max-w-2xl text-center">
@@ -167,6 +155,30 @@ export function Home() {
           </Link>
         </div>
       </section>
+
+      {/* How to pre-order — FAQ popup */}
+      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order 🧈" maxWidth="max-w-md">
+        <ol className="space-y-3 text-sm text-brand-muted">
+          <li>
+            <span className="font-semibold text-brand-dark">1. Browse the menu</span> — pick the cookies you'd like.
+          </li>
+          <li>
+            <span className="font-semibold text-brand-dark">2. Message us</span> — send your order on{' '}
+            <Link to="/contact" onClick={() => setFaqOpen(false)} className="font-semibold text-brand-primary">
+              Contact
+            </Link>{' '}
+            or WhatsApp.
+          </li>
+          <li>
+            <span className="font-semibold text-brand-dark">3. We bake fresh</span> — each batch is baked
+            after your order is placed, so please order ahead (no same-day delivery).
+          </li>
+          <li>
+            <span className="font-semibold text-brand-dark">4. Delivery or pickup</span> — we'll arrange
+            the details with you over chat.
+          </li>
+        </ol>
+      </Modal>
     </div>
   );
 }

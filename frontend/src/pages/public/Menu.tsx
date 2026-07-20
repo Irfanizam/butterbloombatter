@@ -76,16 +76,15 @@ export function Menu() {
         </div>
       )}
 
-      {/* Inquiry form */}
+      {/* Order via WhatsApp */}
       <section className="mx-auto mt-14 max-w-2xl rounded-brand-lg border border-brand-border-soft bg-white p-6 shadow-brand">
-        <h2 className="mb-1 text-xl font-bold text-brand-dark">Send an Inquiry</h2>
+        <h2 className="mb-1 text-xl font-bold text-brand-dark">Order on WhatsApp</h2>
         <p className="mb-4 text-sm text-brand-muted">
-          Tell us what you'd like to order and we'll get back to you. Use “Add to Inquiry” on any cookie above.
+          Use “Add to Inquiry” on any cookie above to build your list, then send it to us on WhatsApp.
         </p>
         <InquiryForm
           message={message}
           onMessageChange={setMessage}
-          showPhone
           messageLabel="What would you like to order?"
         />
       </section>

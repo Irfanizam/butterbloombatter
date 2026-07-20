@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { FinanceType, OrderStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { asyncHandler } from '../lib/http';
-import { getMonthlyTotals } from '../lib/finance-stats';
+import { getMonthlySalesVsExpenses } from '../lib/finance-stats';
 
 // GET /api/dashboard — aggregate stats for the admin home
 export const getDashboard = asyncHandler(async (_req: Request, res: Response) => {
@@ -12,26 +12,26 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-  const [todayOrders, todayAgg, monthFinance, lowStockProducts, recentOrders, statusGroups, monthlyChart] =
+  const notCancelled = { status: { not: OrderStatus.CANCELLED } } as const;
+
+  const [todayOrders, todayAgg, monthOrdersAgg, monthExpenseAgg, recentOrders, statusGroups, monthlyChart] =
     await Promise.all([
       prisma.order.count({
         where: { createdAt: { gte: startOfToday, lt: startOfTomorrow } },
       }),
+      // Revenue = orders (sales), not finance entries
       prisma.order.aggregate({
         _sum: { totalAmount: true },
-        where: {
-          createdAt: { gte: startOfToday, lt: startOfTomorrow },
-          status: { not: OrderStatus.CANCELLED },
-        },
+        where: { createdAt: { gte: startOfToday, lt: startOfTomorrow }, ...notCancelled },
       }),
-      prisma.finance.findMany({
-        where: { date: { gte: startOfMonth, lt: startOfNextMonth } },
-        select: { type: true, amount: true },
+      prisma.order.aggregate({
+        _sum: { totalAmount: true },
+        where: { createdAt: { gte: startOfMonth, lt: startOfNextMonth }, ...notCancelled },
       }),
-      prisma.product.findMany({
-        where: { stock: { lt: 10 } },
-        orderBy: { stock: 'asc' },
-        include: { category: true },
+      // Expenses = Finance OUT entries (manual)
+      prisma.finance.aggregate({
+        _sum: { amount: true },
+        where: { type: FinanceType.OUT, date: { gte: startOfMonth, lt: startOfNextMonth } },
       }),
       prisma.order.findMany({
         take: 5,
@@ -39,15 +39,11 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
         include: { customer: { select: { id: true, name: true } } },
       }),
       prisma.order.groupBy({ by: ['status'], _count: { _all: true } }),
-      getMonthlyTotals(6),
+      getMonthlySalesVsExpenses(6),
     ]);
 
-  const monthRevenue = monthFinance
-    .filter((f) => f.type === FinanceType.IN)
-    .reduce((sum, f) => sum + f.amount, 0);
-  const monthExpenses = monthFinance
-    .filter((f) => f.type === FinanceType.OUT)
-    .reduce((sum, f) => sum + f.amount, 0);
+  const monthRevenue = monthOrdersAgg._sum.totalAmount ?? 0;
+  const monthExpenses = monthExpenseAgg._sum.amount ?? 0;
 
   const ordersByStatus: Record<string, number> = {};
   for (const group of statusGroups) {
@@ -60,7 +56,7 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
     monthRevenue,
     monthExpenses,
     monthNet: monthRevenue - monthExpenses,
-    lowStockProducts,
+    lowStockProducts: [],
     recentOrders,
     ordersByStatus,
     monthlyChart,

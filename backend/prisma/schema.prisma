@@ -93,7 +93,7 @@ enum OrderStatus {
   PENDING
   CONFIRMED
   BAKING
-  READY
+  PACKED
   DELIVERED
   CANCELLED
 }
