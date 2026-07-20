@@ -41,6 +41,7 @@ export function OrderFormModal({ open, onClose }: Props) {
   const [newEmail, setNewEmail] = useState('');
   const [items, setItems] = useState<LineItem[]>([{ productId: '', quantity: 1 }]);
   const [deliveryDate, setDeliveryDate] = useState('');
+  const [placedDate, setPlacedDate] = useState('');
   const [notes, setNotes] = useState('');
   const [tag, setTag] = useState('');
 
@@ -52,6 +53,7 @@ export function OrderFormModal({ open, onClose }: Props) {
     setNewEmail('');
     setItems([{ productId: '', quantity: 1 }]);
     setDeliveryDate('');
+    setPlacedDate(new Date().toISOString().slice(0, 10));
     setNotes('');
     setTag('');
   }, [open]);
@@ -83,6 +85,7 @@ export function OrderFormModal({ open, onClose }: Props) {
         notes: notes || undefined,
         tag: tag || undefined,
         deliveryDate: deliveryDate || undefined,
+        placedDate: placedDate || undefined,
       });
     },
     onSuccess: () => {
@@ -197,6 +200,11 @@ export function OrderFormModal({ open, onClose }: Props) {
             + Add item
           </button>
         </div>
+
+        <label className="block">
+          <span className="mb-1 block text-sm font-semibold text-brand-dark">Order date (placed)</span>
+          <input type="date" className={inputCls} value={placedDate} onChange={(e) => setPlacedDate(e.target.value)} />
+        </label>
 
         <div className="grid grid-cols-2 gap-2">
           <label className="block">

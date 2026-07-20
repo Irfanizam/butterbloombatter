@@ -1,4 +1,4 @@
-import { FinanceType } from '@prisma/client';
+import { FinanceType, OrderStatus } from '@prisma/client';
 import { prisma } from './prisma';
 
 export interface MonthlyTotal {
@@ -35,6 +35,46 @@ export async function getMonthlyTotals(months: number): Promise<MonthlyTotal[]> 
     else bucket.out += entry.amount;
   }
 
+  return Array.from(buckets.entries()).map(([month, v]) => ({
+    month,
+    in: v.in,
+    out: v.out,
+    net: v.in - v.out,
+  }));
+}
+
+/**
+ * Monthly Sales vs Expenses for the last `months` months:
+ * in = order revenue (non-cancelled), out = Finance OUT entries.
+ */
+export async function getMonthlySalesVsExpenses(months: number): Promise<MonthlyTotal[]> {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+
+  const [orders, expenses] = await Promise.all([
+    prisma.order.findMany({
+      where: { createdAt: { gte: start }, status: { not: OrderStatus.CANCELLED } },
+      select: { totalAmount: true, createdAt: true },
+    }),
+    prisma.finance.findMany({
+      where: { type: FinanceType.OUT, date: { gte: start } },
+      select: { amount: true, date: true },
+    }),
+  ]);
+
+  const buckets = new Map<string, { in: number; out: number }>();
+  for (let i = 0; i < months; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - (months - 1) + i, 1);
+    buckets.set(monthKey(d), { in: 0, out: 0 });
+  }
+  for (const o of orders) {
+    const b = buckets.get(monthKey(o.createdAt));
+    if (b) b.in += o.totalAmount;
+  }
+  for (const e of expenses) {
+    const b = buckets.get(monthKey(e.date));
+    if (b) b.out += e.amount;
+  }
   return Array.from(buckets.entries()).map(([month, v]) => ({
     month,
     in: v.in,

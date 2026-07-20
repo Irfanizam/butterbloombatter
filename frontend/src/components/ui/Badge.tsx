@@ -4,7 +4,7 @@ const statusStyles: Record<OrderStatus, string> = {
   PENDING: 'bg-brand-accent-light text-brand-gold',
   CONFIRMED: 'bg-brand-light text-brand-dark',
   BAKING: 'bg-brand-accent-light text-brand-gold',
-  READY: 'bg-brand-green-light text-brand-green',
+  PACKED: 'bg-brand-green-light text-brand-green',
   DELIVERED: 'bg-brand-green-light text-brand-green',
   CANCELLED: 'bg-brand-red-light text-brand-red',
 };

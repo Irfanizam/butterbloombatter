@@ -15,7 +15,7 @@ const TABS: ('ALL' | OrderStatus)[] = [
   'PENDING',
   'CONFIRMED',
   'BAKING',
-  'READY',
+  'PACKED',
   'DELIVERED',
   'CANCELLED',
 ];
