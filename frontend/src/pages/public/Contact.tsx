@@ -22,9 +22,6 @@ export function Contact() {
         >
           <span className="text-lg">💬</span> Message us on WhatsApp
         </a>
-        <p className="mt-3 text-xs text-brand-faded">
-          We take and confirm all orders over WhatsApp chat.
-        </p>
       </div>
     </div>
   );

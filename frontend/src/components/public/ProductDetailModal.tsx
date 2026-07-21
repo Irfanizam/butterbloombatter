@@ -59,7 +59,7 @@ export function ProductDetailModal({ productId, onClose, onAddToInquiry }: Props
           {/* Carousel */}
           <div className="relative flex h-80 items-center justify-center overflow-hidden rounded-brand-lg bg-brand-soft">
             {gallery.length > 0 ? (
-              <img src={gallery[safeIndex]} alt={product.name} className="h-full w-full object-contain" />
+              <img src={gallery[safeIndex]} alt={product.name} className="h-full w-full object-cover" />
             ) : (
               <CookiePlaceholder className="h-full w-full" />
             )}

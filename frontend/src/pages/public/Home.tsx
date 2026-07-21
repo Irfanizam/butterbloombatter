@@ -11,18 +11,18 @@ import { Modal } from '../../components/ui/Modal';
 const HIGHLIGHTS = [
   {
     icon: '🧈',
-    title: 'Pure butter & quality ingredients',
-    text: 'Made with carefully selected ingredients for the best flavour.',
+    title: 'Quality ingredients',
+    text: 'Made with pure butter for the best flavour',
   },
   {
     icon: '🍪',
-    title: 'Homemade · Baked fresh',
-    text: 'Homemade cookies, baked fresh from the oven to your hands.',
+    title: 'Homemade cookies',
+    text: 'Baked fresh in small batches and packed with extra care',
   },
   {
     icon: '🎀',
     title: 'Custom orders',
-    text: 'Personalised packaging for any occasion.',
+    text: 'Personalised packaging for any occasion',
   },
 ];
 
@@ -68,7 +68,7 @@ export function Home() {
               How to pre-order
             </button>
           </div>
-          <p className="mt-6 text-sm lowercase text-white/70">pure butter · small batches · cookie flavours</p>
+          <p className="mt-6 text-sm lowercase text-white/70">pure butter · small batches · cookie favors</p>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 h-10 rounded-t-[50%] bg-brand-bg" />
@@ -160,22 +160,22 @@ export function Home() {
       <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order 🧈" maxWidth="max-w-md">
         <ol className="space-y-3 text-sm text-brand-muted">
           <li>
-            <span className="font-semibold text-brand-dark">1. Browse the menu</span> — pick the cookies you'd like.
+            <span className="font-semibold text-brand-dark">Browse the menu</span> — choose the cookies you'd like.
           </li>
           <li>
-            <span className="font-semibold text-brand-dark">2. Message us</span> — send your order on{' '}
+            <span className="font-semibold text-brand-dark">Place your order</span> — send us your order via{' '}
             <Link to="/contact" onClick={() => setFaqOpen(false)} className="font-semibold text-brand-primary">
               Contact
             </Link>{' '}
             or WhatsApp.
           </li>
           <li>
-            <span className="font-semibold text-brand-dark">3. We bake fresh</span> — each batch is baked
-            after your order is placed, so please order ahead (no same-day delivery).
+            <span className="font-semibold text-brand-dark">Baked fresh to order</span> — every batch is baked
+            after your order is placed, so please order in advance. (No same-day delivery.)
           </li>
           <li>
-            <span className="font-semibold text-brand-dark">4. Delivery or pickup</span> — we'll arrange
-            the details with you over chat.
+            <span className="font-semibold text-brand-dark">Delivery or pickup</span> — we'll confirm the
+            details with you over chat.
           </li>
         </ol>
       </Modal>

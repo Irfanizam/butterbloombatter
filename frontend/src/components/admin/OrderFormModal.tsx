@@ -15,6 +15,7 @@ interface Props {
 interface LineItem {
   productId: number | '';
   quantity: number;
+  unitPrice: number | '';
 }
 
 const inputCls =
@@ -39,7 +40,7 @@ export function OrderFormModal({ open, onClose }: Props) {
   const [newCustomer, setNewCustomer] = useState(false);
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
-  const [items, setItems] = useState<LineItem[]>([{ productId: '', quantity: 1 }]);
+  const [items, setItems] = useState<LineItem[]>([{ productId: '', quantity: 1, unitPrice: '' }]);
   const [deliveryDate, setDeliveryDate] = useState('');
   const [placedDate, setPlacedDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -51,7 +52,7 @@ export function OrderFormModal({ open, onClose }: Props) {
     setNewCustomer(false);
     setNewName('');
     setNewEmail('');
-    setItems([{ productId: '', quantity: 1 }]);
+    setItems([{ productId: '', quantity: 1, unitPrice: '' }]);
     setDeliveryDate('');
     setPlacedDate(new Date().toISOString().slice(0, 10));
     setNotes('');
@@ -59,11 +60,12 @@ export function OrderFormModal({ open, onClose }: Props) {
   }, [open]);
 
   const priceOf = (id: number | '') => products.find((p) => p.id === id)?.price ?? 0;
-  const total = items.reduce((sum, it) => sum + priceOf(it.productId) * it.quantity, 0);
+  const unitPriceOf = (it: LineItem) => (it.unitPrice === '' ? priceOf(it.productId) : it.unitPrice);
+  const total = items.reduce((sum, it) => sum + unitPriceOf(it) * it.quantity, 0);
 
   const updateItem = (idx: number, patch: Partial<LineItem>) =>
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
-  const addItem = () => setItems((prev) => [...prev, { productId: '', quantity: 1 }]);
+  const addItem = () => setItems((prev) => [...prev, { productId: '', quantity: 1, unitPrice: '' }]);
   const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
 
   const mutation = useMutation({
@@ -78,7 +80,11 @@ export function OrderFormModal({ open, onClose }: Props) {
       }
       const lineItems = items
         .filter((it) => it.productId !== '' && it.quantity > 0)
-        .map((it) => ({ productId: it.productId as number, quantity: it.quantity }));
+        .map((it) => ({
+          productId: it.productId as number,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice === '' ? undefined : it.unitPrice,
+        }));
       return ordersApi.create({
         customerId: resolvedCustomerId as number,
         items: lineItems,
@@ -166,13 +172,19 @@ export function OrderFormModal({ open, onClose }: Props) {
         {/* Line items */}
         <div>
           <span className="mb-1 block text-sm font-semibold text-brand-dark">Items *</span>
+          <p className="mb-2 text-xs text-brand-faded">
+            Price defaults to the product's current price — edit it for back-dated orders placed at an older price.
+          </p>
           <div className="space-y-2">
             {items.map((it, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+              <div key={idx} className="flex flex-wrap items-center gap-2">
                 <select
-                  className={inputCls}
+                  className={`${inputCls} sm:w-auto sm:flex-1`}
                   value={it.productId}
-                  onChange={(e) => updateItem(idx, { productId: e.target.value ? Number(e.target.value) : '' })}
+                  onChange={(e) => {
+                    const pid = e.target.value ? Number(e.target.value) : '';
+                    updateItem(idx, { productId: pid, unitPrice: pid === '' ? '' : priceOf(pid) });
+                  }}
                 >
                   <option value="">Select product</option>
                   {products.map((p) => (
@@ -186,7 +198,20 @@ export function OrderFormModal({ open, onClose }: Props) {
                   min={1}
                   value={it.quantity}
                   onChange={(e) => updateItem(idx, { quantity: Math.max(1, Number(e.target.value)) })}
-                  className="w-20 rounded-brand border border-brand-border px-2 py-2 text-sm outline-none focus:border-brand-primary"
+                  className="w-16 rounded-brand border border-brand-border px-2 py-2 text-sm outline-none focus:border-brand-primary"
+                  aria-label="Quantity"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={it.unitPrice}
+                  onChange={(e) =>
+                    updateItem(idx, { unitPrice: e.target.value === '' ? '' : Math.max(0, Number(e.target.value)) })
+                  }
+                  className="w-24 rounded-brand border border-brand-border px-2 py-2 text-sm outline-none focus:border-brand-primary"
+                  placeholder="Price"
+                  aria-label="Unit price (RM)"
                 />
                 {items.length > 1 && (
                   <button type="button" onClick={() => removeItem(idx)} className="text-brand-red" aria-label="Remove">

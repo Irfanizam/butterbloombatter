@@ -55,9 +55,9 @@ export function PublicLayout() {
 
       <footer className="border-t border-brand-border-soft bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-brand-faded">
-          🌻 ButterBloomBatter — where slow bakes quietly bloom
+          🍪 ButterBloomBatter • where slow bakes quietly bloom
           <Link to="/login" className="ml-2 text-brand-faded/70 hover:text-brand-muted">
-            · Staff
+            · Admin
           </Link>
         </div>
       </footer>
