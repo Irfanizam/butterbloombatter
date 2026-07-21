@@ -1,11 +1,16 @@
 import { Request, Response } from 'express';
-import { OrderStatus, Prisma } from '@prisma/client';
+import { FinanceType, OrderStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError, asyncHandler } from '../lib/http';
 import { parseId, parseRequiredNumber, strOrNull } from '../lib/parse';
 import { CreateOrderBody } from '../types';
 
 type TxClient = Prisma.TransactionClient;
+
+// Orders are mirrored into the finance ledger as income, matched back to the
+// order by its unique number so cancel/delete can clean the ledger entry up.
+const ORDER_SALES_CATEGORY = 'Cookie Sales';
+const orderLedgerDesc = (orderNumber: string) => `Order ${orderNumber}`;
 
 function isOrderStatus(value: string): value is OrderStatus {
   return (Object.values(OrderStatus) as string[]).includes(value);
@@ -148,6 +153,20 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
+    // Mirror the sale into the ledger as income. createdAt defaults to now(),
+    // so it interleaves with manual entries by creation time.
+    await tx.finance.create({
+      data: {
+        type: FinanceType.IN,
+        amount: total,
+        desc: orderLedgerDesc(orderNumber),
+        category: ORDER_SALES_CATEGORY,
+        date: placedDate ?? new Date(),
+        staffId,
+        customerId,
+      },
+    });
+
     return created;
   });
 
@@ -172,6 +191,23 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
           data: { stock: { increment: item.quantity } },
         });
       }
+      // Sale reversed → remove its ledger income
+      await tx.finance.deleteMany({
+        where: { desc: orderLedgerDesc(existing.orderNumber), category: ORDER_SALES_CATEGORY },
+      });
+    } else if (status !== OrderStatus.CANCELLED && existing.status === OrderStatus.CANCELLED) {
+      // Re-activating a cancelled order → restore its ledger income
+      await tx.finance.create({
+        data: {
+          type: FinanceType.IN,
+          amount: existing.totalAmount,
+          desc: orderLedgerDesc(existing.orderNumber),
+          category: ORDER_SALES_CATEGORY,
+          date: existing.createdAt,
+          staffId: existing.staffId,
+          customerId: existing.customerId,
+        },
+      });
     }
 
     return tx.order.update({
@@ -229,6 +265,10 @@ export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
       }
     }
 
+    // Drop the mirrored ledger income for this order (no-op if already cancelled)
+    await tx.finance.deleteMany({
+      where: { desc: orderLedgerDesc(existing.orderNumber), category: ORDER_SALES_CATEGORY },
+    });
     await tx.orderItem.deleteMany({ where: { orderId: id } });
     await tx.order.delete({ where: { id } });
   });
