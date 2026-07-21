@@ -16,18 +16,18 @@ function monthRange(month: string): { gte: Date; lt: Date } | null {
 }
 
 function sortToOrderBy(sort: string): Prisma.FinanceOrderByWithRelationInput[] {
-  // Secondary `id` keeps same-date entries in the order they were created,
-  // so the ledger follows the real business timeline instead of an arbitrary tie order.
+  // Newest/oldest follow the time the entry was created (createdAt), so the ledger
+  // reads in the exact order entries were added — the first created sits at the bottom.
   switch (sort) {
     case 'oldest':
-      return [{ date: 'asc' }, { id: 'asc' }];
+      return [{ createdAt: 'asc' }, { id: 'asc' }];
     case 'highest':
-      return [{ amount: 'desc' }, { id: 'desc' }];
+      return [{ amount: 'desc' }, { createdAt: 'desc' }];
     case 'lowest':
-      return [{ amount: 'asc' }, { id: 'asc' }];
+      return [{ amount: 'asc' }, { createdAt: 'asc' }];
     case 'newest':
     default:
-      return [{ date: 'desc' }, { id: 'desc' }];
+      return [{ createdAt: 'desc' }, { id: 'desc' }];
   }
 }
 

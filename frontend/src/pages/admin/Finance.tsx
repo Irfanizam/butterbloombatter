@@ -30,7 +30,7 @@ export function Finance() {
 
   const [month, setMonth] = useState<string>('all');
   const [type, setType] = useState<'all' | 'IN' | 'OUT'>('all');
-  const [sort, setSort] = useState<SortOption>('oldest');
+  const [sort, setSort] = useState<SortOption>('newest');
 
   const user = useAuthStore((s) => s.user);
   const { data: dash } = useQuery({ queryKey: ['dashboard'], queryFn: dashboardApi.get });
