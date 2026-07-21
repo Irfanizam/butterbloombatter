@@ -15,17 +15,19 @@ function monthRange(month: string): { gte: Date; lt: Date } | null {
   return { gte: new Date(year, mon - 1, 1), lt: new Date(year, mon, 1) };
 }
 
-function sortToOrderBy(sort: string): Prisma.FinanceOrderByWithRelationInput {
+function sortToOrderBy(sort: string): Prisma.FinanceOrderByWithRelationInput[] {
+  // Secondary `id` keeps same-date entries in the order they were created,
+  // so the ledger follows the real business timeline instead of an arbitrary tie order.
   switch (sort) {
     case 'oldest':
-      return { date: 'asc' };
+      return [{ date: 'asc' }, { id: 'asc' }];
     case 'highest':
-      return { amount: 'desc' };
+      return [{ amount: 'desc' }, { id: 'desc' }];
     case 'lowest':
-      return { amount: 'asc' };
+      return [{ amount: 'asc' }, { id: 'asc' }];
     case 'newest':
     default:
-      return { date: 'desc' };
+      return [{ date: 'desc' }, { id: 'desc' }];
   }
 }
 

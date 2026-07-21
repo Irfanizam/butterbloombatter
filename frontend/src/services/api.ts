@@ -127,7 +127,7 @@ export interface OrderListParams {
 
 export interface CreateOrderPayload {
   customerId: number;
-  items: { productId: number; quantity: number }[];
+  items: { productId: number; quantity: number; unitPrice?: number }[];
   notes?: string;
   tag?: string;
   deliveryDate?: string;

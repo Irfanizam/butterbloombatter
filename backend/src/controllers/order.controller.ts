@@ -111,10 +111,16 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
       const product = await tx.product.findUnique({ where: { id: productId } });
       if (!product) throw new AppError(400, `Product ${productId} does not exist`);
+      // Optional price override — lets admin back-date past orders at the price
+      // that applied at the time. Falls back to the product's current price.
+      const hasOverride =
+        item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '';
+      const unitPrice = hasOverride ? parseRequiredNumber(item.unitPrice, 'Unit price') : product.price;
+      if (unitPrice < 0) throw new AppError(400, 'Unit price cannot be negative');
       // Pre-order business: orders are never blocked by stock. Stock still
       // decrements (may go negative) as a bake-to-order backlog indicator.
-      total += product.price * quantity;
-      lineItems.push({ productId, quantity, unitPrice: product.price });
+      total += unitPrice * quantity;
+      lineItems.push({ productId, quantity, unitPrice });
     }
 
     const year = (placedDate ?? new Date()).getFullYear();

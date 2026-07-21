@@ -16,6 +16,7 @@ export interface PublicUser {
 export interface OrderItemInput {
   productId?: unknown;
   quantity?: unknown;
+  unitPrice?: unknown;
 }
 
 export interface CreateOrderBody {
