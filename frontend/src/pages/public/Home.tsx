@@ -68,7 +68,7 @@ export function Home() {
               How to pre-order
             </button>
           </div>
-          <p className="mt-6 text-sm lowercase text-white/70">pure butter - small batches - cookie flavours</p>
+          <p className="mt-6 text-sm lowercase text-white/70">pure butter · small batches · cookie favors</p>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 h-10 rounded-t-[50%] bg-brand-bg" />
