@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiErrorMessage, dashboardApi, financeApi, type FinanceListParams } from '../../services/api';
+import { apiErrorMessage, dashboardApi, financeApi, ordersApi, type FinanceListParams } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { useAuthStore } from '../../store/auth.store';
 import { formatDate, formatRM, greeting, monthLabel } from '../../lib/format';
 import { PageHeader } from '../../components/admin/PageHeader';
 import { FinanceFormModal } from '../../components/admin/FinanceFormModal';
+import { OrderFormModal } from '../../components/admin/OrderFormModal';
 import { MonthlyBars } from '../../components/ui/MonthlyBars';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
@@ -48,6 +49,14 @@ export function Finance() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<FinanceEntry | null>(null);
   const [deleting, setDeleting] = useState<{ id: number; desc: string } | null>(null);
+
+  // Editing an order income row opens the full order editor (the row *is* the order).
+  const [editOrderId, setEditOrderId] = useState<number | null>(null);
+  const { data: editOrder } = useQuery({
+    queryKey: ['order', editOrderId],
+    queryFn: () => ordersApi.get(editOrderId as number),
+    enabled: editOrderId != null,
+  });
 
   const totals = useMemo(() => {
     const list = rows ?? [];
@@ -231,8 +240,9 @@ export function Finance() {
                         order
                       </span>
                     )}
+                    {r.subtitle && <span className="block text-xs text-brand-faded">{r.subtitle}</span>}
                     {r.note && <span className="block text-xs text-brand-faded">{r.note}</span>}
-                    {r.source === 'finance' && r.customerName && (
+                    {r.customerName && (
                       <span className="block text-xs text-brand-primary">👤 {r.customerName}</span>
                     )}
                   </td>
@@ -261,7 +271,9 @@ export function Finance() {
                           </Button>
                         </>
                       ) : (
-                        <span className="text-xs text-brand-faded">from order</span>
+                        <Button size="sm" variant="secondary" onClick={() => setEditOrderId(r.orderId as number)}>
+                          Edit
+                        </Button>
                       )}
                     </div>
                   </td>
@@ -280,6 +292,12 @@ export function Finance() {
       )}
 
       <FinanceFormModal open={formOpen} onClose={() => setFormOpen(false)} entry={editing} />
+
+      <OrderFormModal
+        open={editOrderId != null && editOrder != null}
+        order={editOrder ?? null}
+        onClose={() => setEditOrderId(null)}
+      />
 
       <ConfirmDialog
         open={deleting !== null}
