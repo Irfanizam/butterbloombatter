@@ -11,7 +11,7 @@ import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/Badge';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import type { Finance as FinanceEntry } from '../../types';
+import type { Finance as FinanceEntry, LedgerRow } from '../../types';
 
 function StatCard({ label, value, tint = 'text-brand-dark' }: { label: string; value: string; tint?: string }) {
   return (
@@ -35,35 +35,50 @@ export function Finance() {
   const user = useAuthStore((s) => s.user);
   const { data: dash } = useQuery({ queryKey: ['dashboard'], queryFn: dashboardApi.get });
 
-  const { data: summary = [] } = useQuery({
-    queryKey: ['finance', 'summary'],
-    queryFn: financeApi.summary,
-  });
-
   const params: FinanceListParams = {
     sort,
     ...(month !== 'all' ? { month } : {}),
     ...(type !== 'all' ? { type } : {}),
   };
-  const { data: entries, isLoading } = useQuery({
-    queryKey: ['finance', params],
-    queryFn: () => financeApi.list(params),
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ['ledger', params],
+    queryFn: () => financeApi.ledger(params),
   });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<FinanceEntry | null>(null);
-  const [deleting, setDeleting] = useState<FinanceEntry | null>(null);
+  const [deleting, setDeleting] = useState<{ id: number; desc: string } | null>(null);
 
   const totals = useMemo(() => {
-    const list = entries ?? [];
-    const income = list.filter((e) => e.type === 'IN').reduce((s, e) => s + e.amount, 0);
-    const expense = list.filter((e) => e.type === 'OUT').reduce((s, e) => s + e.amount, 0);
+    const list = rows ?? [];
+    const income = list.filter((r) => r.type === 'IN').reduce((s, r) => s + r.amount, 0);
+    const expense = list.filter((r) => r.type === 'OUT').reduce((s, r) => s + r.amount, 0);
     return { income, expense, net: income - expense };
-  }, [entries]);
+  }, [rows]);
+
+  /** Reconstruct a Finance entry from a ledger row so the modal can edit it. */
+  const editFinanceRow = (row: LedgerRow) => {
+    if (row.source !== 'finance' || row.financeId == null) return;
+    setEditing({
+      id: row.financeId,
+      type: row.type,
+      amount: row.amount,
+      desc: row.desc,
+      category: row.category,
+      note: row.note,
+      date: row.date,
+      staffId: 0,
+      customerId: row.customerId ?? null,
+      customer: row.customerName ? { id: row.customerId ?? 0, name: row.customerName } : null,
+      createdAt: row.date,
+    });
+    setFormOpen(true);
+  };
 
   const removeEntry = useMutation({
     mutationFn: (id: number) => financeApi.remove(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ledger'] });
       queryClient.invalidateQueries({ queryKey: ['finance'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success('Entry deleted');
@@ -169,7 +184,7 @@ export function Finance() {
       <div className="mb-3 flex flex-wrap gap-2">
         <select className={selectCls} value={month} onChange={(e) => setMonth(e.target.value)}>
           <option value="all">All months</option>
-          {summary.map((m) => (
+          {(dash?.monthlyChart ?? []).map((m) => (
             <option key={m.month} value={m.month}>
               {monthLabel(m.month)} {m.month.slice(0, 4)}
             </option>
@@ -206,43 +221,53 @@ export function Finance() {
               </tr>
             </thead>
             <tbody>
-              {(entries ?? []).map((e) => (
-                <tr key={e.id} className="border-t border-brand-border-soft">
-                  <td className="px-4 py-3 text-brand-faded">{formatDate(e.date)}</td>
+              {(rows ?? []).map((r) => (
+                <tr key={r.key} className="border-t border-brand-border-soft">
+                  <td className="px-4 py-3 text-brand-faded">{formatDate(r.date)}</td>
                   <td className="px-4 py-3 text-brand-dark">
-                    {e.desc}
-                    {e.note && <span className="block text-xs text-brand-faded">{e.note}</span>}
-                    {e.customer && <span className="block text-xs text-brand-primary">👤 {e.customer.name}</span>}
+                    {r.desc}
+                    {r.source === 'order' && (
+                      <span className="ml-2 rounded-full bg-brand-light px-2 py-0.5 text-xs font-semibold text-brand-primary">
+                        order
+                      </span>
+                    )}
+                    {r.note && <span className="block text-xs text-brand-faded">{r.note}</span>}
+                    {r.source === 'finance' && r.customerName && (
+                      <span className="block text-xs text-brand-primary">👤 {r.customerName}</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-brand-muted">{e.category}</td>
+                  <td className="px-4 py-3 text-brand-muted">{r.category}</td>
                   <td
                     className={`px-4 py-3 text-right font-semibold ${
-                      e.type === 'IN' ? 'text-brand-green' : 'text-brand-red'
+                      r.type === 'IN' ? 'text-brand-green' : 'text-brand-red'
                     }`}
                   >
-                    {e.type === 'IN' ? '+' : '−'}
-                    {formatRM(e.amount)}
+                    {r.type === 'IN' ? '+' : '−'}
+                    {formatRM(r.amount)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          setEditing(e);
-                          setFormOpen(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleting(e)}>
-                        Delete
-                      </Button>
+                      {r.source === 'finance' ? (
+                        <>
+                          <Button size="sm" variant="secondary" onClick={() => editFinanceRow(r)}>
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => setDeleting({ id: r.financeId as number, desc: r.desc })}
+                          >
+                            Delete
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-xs text-brand-faded">from order</span>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
-              {entries?.length === 0 && (
+              {rows?.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-10 text-center text-brand-faded">
                     No entries for this view.

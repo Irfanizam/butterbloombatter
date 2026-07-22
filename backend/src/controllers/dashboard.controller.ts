@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { FinanceType, OrderStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { asyncHandler } from '../lib/http';
-import { getMonthlySalesVsExpenses } from '../lib/finance-stats';
+import { getMonthlySalesVsExpenses, orderIncomeDate } from '../lib/finance-stats';
 
 // GET /api/dashboard — aggregate stats for the admin home
 export const getDashboard = asyncHandler(async (_req: Request, res: Response) => {
@@ -12,21 +12,15 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-  const notCancelled = { status: { not: OrderStatus.CANCELLED } } as const;
-
-  const [todayOrders, todayAgg, monthOrdersAgg, monthExpenseAgg, recentOrders, statusGroups, monthlyChart] =
+  const [todayOrders, deliveredOrders, monthExpenseAgg, recentOrders, statusGroups, monthlyChart] =
     await Promise.all([
       prisma.order.count({
         where: { createdAt: { gte: startOfToday, lt: startOfTomorrow } },
       }),
-      // Revenue = orders (sales), not finance entries
-      prisma.order.aggregate({
-        _sum: { totalAmount: true },
-        where: { createdAt: { gte: startOfToday, lt: startOfTomorrow }, ...notCancelled },
-      }),
-      prisma.order.aggregate({
-        _sum: { totalAmount: true },
-        where: { createdAt: { gte: startOfMonth, lt: startOfNextMonth }, ...notCancelled },
+      // Revenue = DELIVERED orders, booked on their income date (delivery date)
+      prisma.order.findMany({
+        where: { status: OrderStatus.DELIVERED },
+        select: { totalAmount: true, deliveryDate: true, completedAt: true, createdAt: true },
       }),
       // Expenses = Finance OUT entries (manual)
       prisma.finance.aggregate({
@@ -42,7 +36,13 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
       getMonthlySalesVsExpenses(6),
     ]);
 
-  const monthRevenue = monthOrdersAgg._sum.totalAmount ?? 0;
+  const inRange = (d: Date, gte: Date, lt: Date) => d >= gte && d < lt;
+  const todayRevenue = deliveredOrders
+    .filter((o) => inRange(orderIncomeDate(o), startOfToday, startOfTomorrow))
+    .reduce((s, o) => s + o.totalAmount, 0);
+  const monthRevenue = deliveredOrders
+    .filter((o) => inRange(orderIncomeDate(o), startOfMonth, startOfNextMonth))
+    .reduce((s, o) => s + o.totalAmount, 0);
   const monthExpenses = monthExpenseAgg._sum.amount ?? 0;
 
   const ordersByStatus: Record<string, number> = {};
@@ -52,7 +52,7 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
 
   res.json({
     todayOrders,
-    todayRevenue: todayAgg._sum.totalAmount ?? 0,
+    todayRevenue,
     monthRevenue,
     monthExpenses,
     monthNet: monthRevenue - monthExpenses,
