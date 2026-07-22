@@ -22,7 +22,7 @@ function receiptText(order: Order): string {
   const lines = [
     `🍪 ${BUSINESS.name} — Receipt`,
     `Order: ${order.orderNumber}`,
-    `Date: ${formatDate(order.createdAt)}`,
+    `Date: ${formatDate(order.completedAt ?? order.createdAt)}`,
     order.customer?.name ? `Customer: ${order.customer.name}` : '',
     '',
     ...(order.orderItems ?? []).map(
@@ -74,7 +74,7 @@ function printReceipt(order: Order): void {
       </div>
       <div class="meta">
         <div>Order: <b>${order.orderNumber}</b></div>
-        <div>Date: <b>${formatDate(order.createdAt)}</b></div>
+        <div>Date: <b>${formatDate(order.completedAt ?? order.createdAt)}</b></div>
         ${order.customer?.name ? `<div>Customer: <b>${escapeHtml(order.customer.name)}</b></div>` : ''}
         ${order.deliveryDate ? `<div>Delivery: <b>${formatDate(order.deliveryDate)}</b></div>` : ''}
       </div>
@@ -111,7 +111,7 @@ export function ReceiptModal({ order, onClose }: Props) {
                 Order: <span className="font-semibold text-brand-dark">{order.orderNumber}</span>
               </p>
               <p>
-                Date: <span className="font-semibold text-brand-dark">{formatDate(order.createdAt)}</span>
+                Date: <span className="font-semibold text-brand-dark">{formatDate(order.completedAt ?? order.createdAt)}</span>
               </p>
               {order.customer?.name && (
                 <p>

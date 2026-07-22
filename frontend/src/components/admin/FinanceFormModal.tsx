@@ -65,7 +65,7 @@ export function FinanceFormModal({ open, onClose, entry }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['finance'] });
-      queryClient.invalidateQueries({ queryKey: ['finance', 'summary'] });
+      queryClient.invalidateQueries({ queryKey: ['ledger'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success(entry ? 'Entry updated' : 'Entry added');
       onClose();
