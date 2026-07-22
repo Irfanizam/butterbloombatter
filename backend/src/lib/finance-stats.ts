@@ -12,13 +12,18 @@ export function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/** The date a delivered order is booked as income: delivery date, else completion, else placed. */
+/**
+ * The date a delivered order is booked as income: its placed date (createdAt).
+ * The ledger reads as a journal by placed date, so an order sits where it was
+ * created — not where it was delivered — matching how the admin back-dates
+ * past sales. (deliveryDate/completedAt kept in the signature for callers.)
+ */
 export function orderIncomeDate(o: {
   deliveryDate: Date | null;
   completedAt: Date | null;
   createdAt: Date;
 }): Date {
-  return o.deliveryDate ?? o.completedAt ?? o.createdAt;
+  return o.createdAt;
 }
 
 /** Returns IN/OUT/NET totals for each of the last `months` calendar months (oldest first). */
