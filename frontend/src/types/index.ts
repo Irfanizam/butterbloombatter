@@ -98,8 +98,10 @@ export interface LedgerRow {
   orderId?: number;
   type: FinanceType;
   date: string;
+  createdAt: string;
   category: string;
   desc: string;
+  subtitle: string | null;
   note: string | null;
   amount: number;
   customerId?: number | null;

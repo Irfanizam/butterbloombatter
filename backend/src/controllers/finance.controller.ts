@@ -58,7 +58,10 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
     prisma.finance.findMany({ include: { customer: { select: { name: true } } } }),
     prisma.order.findMany({
       where: { status: OrderStatus.DELIVERED },
-      include: { customer: { select: { name: true } } },
+      include: {
+        customer: { select: { name: true } },
+        orderItems: { include: { product: { select: { name: true } } } },
+      },
     }),
   ]);
 
@@ -69,8 +72,10 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
       financeId: f.id,
       type: f.type as 'IN' | 'OUT',
       date: f.date.toISOString(),
+      createdAt: f.createdAt.toISOString(),
       category: f.category,
       desc: f.desc,
+      subtitle: null as string | null,
       note: f.note,
       amount: f.amount,
       customerId: f.customerId,
@@ -81,11 +86,18 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
       source: 'order' as const,
       orderId: o.id,
       type: 'IN' as const,
+      // Booked on the placed date so it slots into the ledger where the order
+      // was created (see orderIncomeDate) — appearing only once delivered.
       date: orderIncomeDate(o).toISOString(),
+      createdAt: o.createdAt.toISOString(),
       category: o.tag || 'Cookie Sales',
-      desc: `${o.orderNumber}${o.customer ? ' · ' + o.customer.name : ''}`,
+      desc: `Order ${o.orderNumber}`,
+      subtitle: o.orderItems
+        .map((it) => `${it.quantity}× ${it.product?.name ?? 'item'}`)
+        .join(', ') || null,
       note: null as string | null,
       amount: o.totalAmount,
+      customerId: o.customerId,
       customerName: o.customer?.name ?? null,
     })),
   ];
@@ -102,11 +114,15 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
   if (typeParam === 'IN' || typeParam === 'OUT') {
     filtered = filtered.filter((x) => x.type === typeParam);
   }
+  // Journal order: primary by transaction date, tie-broken by when the row was
+  // created — so same-day entries read newest-created on top, and an order sits
+  // by its placed date (its createdAt) regardless of when it was delivered.
+  const cmp = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
   filtered.sort((a, b) => {
-    if (sort === 'highest') return b.amount - a.amount;
-    if (sort === 'lowest') return a.amount - b.amount;
-    if (sort === 'oldest') return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
-    return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; // newest
+    if (sort === 'highest') return b.amount - a.amount || cmp(b.createdAt, a.createdAt);
+    if (sort === 'lowest') return a.amount - b.amount || cmp(a.createdAt, b.createdAt);
+    if (sort === 'oldest') return cmp(a.date, b.date) || cmp(a.createdAt, b.createdAt);
+    return cmp(b.date, a.date) || cmp(b.createdAt, a.createdAt); // newest
   });
 
   res.json(filtered);
