@@ -86,8 +86,8 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
       source: 'order' as const,
       orderId: o.id,
       type: 'IN' as const,
-      // Booked on the placed date so it slots into the ledger where the order
-      // was created (see orderIncomeDate) — appearing only once delivered.
+      // Booked on the delivery date (when payment is made) so it slots into the
+      // ledger by that date — appearing only once delivered (see orderIncomeDate).
       date: orderIncomeDate(o).toISOString(),
       createdAt: o.createdAt.toISOString(),
       category: o.tag || 'Cookie Sales',
