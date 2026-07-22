@@ -5,6 +5,7 @@ import type {
   Customer,
   DashboardData,
   Finance,
+  LedgerRow,
   MonthlyTotal,
   Order,
   OrderStatus,
@@ -141,8 +142,17 @@ export const ordersApi = {
   create: (data: CreateOrderPayload) => api.post('/api/orders', data).then((r) => r.data as Order),
   setStatus: (id: number, status: OrderStatus) =>
     api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data as Order),
-  update: (id: number, data: { placedDate?: string; deliveryDate?: string | null; tag?: string | null }) =>
-    api.patch(`/api/orders/${id}`, data).then((r) => r.data as Order),
+  update: (
+    id: number,
+    data: {
+      placedDate?: string;
+      deliveryDate?: string | null;
+      tag?: string | null;
+      notes?: string | null;
+      customerId?: number;
+      items?: { productId: number; quantity: number; unitPrice?: number }[];
+    }
+  ) => api.patch(`/api/orders/${id}`, data).then((r) => r.data as Order),
   remove: (id: number) => api.delete(`/api/orders/${id}`),
 };
 
@@ -156,6 +166,8 @@ type FinanceTypeParam = 'IN' | 'OUT';
 export const financeApi = {
   list: (params: FinanceListParams = {}) =>
     api.get('/api/finance', { params }).then((r) => r.data as Finance[]),
+  ledger: (params: FinanceListParams = {}) =>
+    api.get('/api/finance/ledger', { params }).then((r) => r.data as LedgerRow[]),
   summary: () => api.get('/api/finance/summary').then((r) => r.data as MonthlyTotal[]),
   create: (data: Partial<Finance>) => api.post('/api/finance', data).then((r) => r.data as Finance),
   update: (id: number, data: Partial<Finance>) =>

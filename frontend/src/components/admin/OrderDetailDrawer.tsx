@@ -10,7 +10,7 @@ import { Spinner } from '../ui/Spinner';
 import { StatusBadge } from '../ui/Badge';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { ReceiptModal } from './ReceiptModal';
-import type { OrderStatus } from '../../types';
+import type { Order, OrderStatus } from '../../types';
 
 const STATUSES: OrderStatus[] = [
   'PENDING',
@@ -24,9 +24,10 @@ const STATUSES: OrderStatus[] = [
 interface Props {
   orderId: number | null;
   onClose: () => void;
+  onEdit?: (order: Order) => void;
 }
 
-export function OrderDetailDrawer({ orderId, onClose }: Props) {
+export function OrderDetailDrawer({ orderId, onClose, onEdit }: Props) {
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -181,6 +182,12 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
               Back-date manually entered orders so they land in the right month.
             </p>
           </div>
+
+          {onEdit && (
+            <Button variant="secondary" className="w-full" onClick={() => onEdit(order)}>
+              ✏️ Edit order
+            </Button>
+          )}
 
           <Button variant="secondary" className="w-full" onClick={() => setShowReceipt(true)}>
             🧾 Receipt (WhatsApp / print)

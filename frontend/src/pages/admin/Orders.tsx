@@ -8,7 +8,7 @@ import { OrderDetailDrawer } from '../../components/admin/OrderDetailDrawer';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/Badge';
-import type { OrderStatus } from '../../types';
+import type { Order, OrderStatus } from '../../types';
 
 const TABS: ('ALL' | OrderStatus)[] = [
   'ALL',
@@ -31,6 +31,7 @@ export function Orders() {
   const [tab, setTab] = useState<'ALL' | OrderStatus>('ALL');
   const [sort, setSort] = useState<'newest' | 'oldest' | 'total-desc' | 'total-asc'>('newest');
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
 
   const counts = useMemo(() => {
@@ -135,8 +136,22 @@ export function Orders() {
         </div>
       )}
 
-      <OrderFormModal open={createOpen} onClose={() => setCreateOpen(false)} />
-      <OrderDetailDrawer orderId={detailId} onClose={() => setDetailId(null)} />
+      <OrderFormModal
+        open={createOpen || editOrder !== null}
+        order={editOrder}
+        onClose={() => {
+          setCreateOpen(false);
+          setEditOrder(null);
+        }}
+      />
+      <OrderDetailDrawer
+        orderId={detailId}
+        onClose={() => setDetailId(null)}
+        onEdit={(o) => {
+          setDetailId(null);
+          setEditOrder(o);
+        }}
+      />
     </div>
   );
 }

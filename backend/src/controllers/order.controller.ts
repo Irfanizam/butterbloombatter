@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { FinanceType, OrderStatus, Prisma } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError, asyncHandler } from '../lib/http';
 import { parseId, parseRequiredNumber, strOrNull } from '../lib/parse';
@@ -7,10 +7,9 @@ import { CreateOrderBody } from '../types';
 
 type TxClient = Prisma.TransactionClient;
 
-// Orders are mirrored into the finance ledger as income, matched back to the
-// order by its unique number so cancel/delete can clean the ledger entry up.
-const ORDER_SALES_CATEGORY = 'Cookie Sales';
-const orderLedgerDesc = (orderNumber: string) => `Order ${orderNumber}`;
+// Completed (DELIVERED) orders are surfaced as income in the finance ledger
+// virtually (computed from orders), so there is no mirrored Finance row to keep
+// in sync — see finance.controller getLedger + finance-stats.
 
 function isOrderStatus(value: string): value is OrderStatus {
   return (Object.values(OrderStatus) as string[]).includes(value);
@@ -153,20 +152,6 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    // Mirror the sale into the ledger as income. createdAt defaults to now(),
-    // so it interleaves with manual entries by creation time.
-    await tx.finance.create({
-      data: {
-        type: FinanceType.IN,
-        amount: total,
-        desc: orderLedgerDesc(orderNumber),
-        category: ORDER_SALES_CATEGORY,
-        date: placedDate ?? new Date(),
-        staffId,
-        customerId,
-      },
-    });
-
     return created;
   });
 
@@ -191,28 +176,19 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
           data: { stock: { increment: item.quantity } },
         });
       }
-      // Sale reversed → remove its ledger income
-      await tx.finance.deleteMany({
-        where: { desc: orderLedgerDesc(existing.orderNumber), category: ORDER_SALES_CATEGORY },
-      });
-    } else if (status !== OrderStatus.CANCELLED && existing.status === OrderStatus.CANCELLED) {
-      // Re-activating a cancelled order → restore its ledger income
-      await tx.finance.create({
-        data: {
-          type: FinanceType.IN,
-          amount: existing.totalAmount,
-          desc: orderLedgerDesc(existing.orderNumber),
-          category: ORDER_SALES_CATEGORY,
-          date: existing.createdAt,
-          staffId: existing.staffId,
-          customerId: existing.customerId,
-        },
-      });
+    }
+
+    // Stamp completion when entering DELIVERED; clear it when leaving.
+    const data: Prisma.OrderUpdateInput = { status };
+    if (status === OrderStatus.DELIVERED && existing.status !== OrderStatus.DELIVERED) {
+      data.completedAt = new Date();
+    } else if (status !== OrderStatus.DELIVERED && existing.status === OrderStatus.DELIVERED) {
+      data.completedAt = null;
     }
 
     return tx.order.update({
       where: { id },
-      data: { status },
+      data,
       include: { orderItems: { include: { product: true } }, customer: true },
     });
   });
@@ -220,32 +196,83 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
   res.json(order);
 });
 
-// PATCH /api/orders/:id — edit placed date, delivery date, or tag
+// PATCH /api/orders/:id — edit an order (dates, tag, notes, customer, and items)
 export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id);
-  const body = req.body as Record<string, unknown>;
-  const data: Prisma.OrderUpdateInput = {};
+  const body = req.body as CreateOrderBody & Record<string, unknown>;
 
-  if (body.placedDate !== undefined) {
-    const d = new Date(body.placedDate as string);
-    if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid order date');
-    data.createdAt = d;
-  }
-  if (body.deliveryDate !== undefined) {
-    if (!body.deliveryDate) data.deliveryDate = null;
-    else {
-      const d = new Date(body.deliveryDate as string);
-      if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid delivery date');
-      data.deliveryDate = d;
+  const order = await prisma.$transaction(async (tx) => {
+    const existing = await tx.order.findUnique({ where: { id }, include: { orderItems: true } });
+    if (!existing) throw new AppError(404, 'Order not found');
+
+    const data: Prisma.OrderUpdateInput = {};
+
+    if (body.placedDate !== undefined) {
+      const d = new Date(body.placedDate as string);
+      if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid order date');
+      data.createdAt = d;
     }
-  }
-  if (body.tag !== undefined) data.tag = strOrNull(body.tag);
+    if (body.deliveryDate !== undefined) {
+      if (!body.deliveryDate) data.deliveryDate = null;
+      else {
+        const d = new Date(body.deliveryDate as string);
+        if (Number.isNaN(d.getTime())) throw new AppError(400, 'Invalid delivery date');
+        data.deliveryDate = d;
+      }
+    }
+    if (body.tag !== undefined) data.tag = strOrNull(body.tag);
+    if (body.notes !== undefined) data.notes = strOrNull(body.notes);
+    if (body.customerId !== undefined) {
+      const cid = parseRequiredNumber(body.customerId, 'Customer');
+      const customer = await tx.customer.findUnique({ where: { id: cid } });
+      if (!customer) throw new AppError(400, 'Customer does not exist');
+      data.customer = { connect: { id: cid } };
+    }
 
-  const order = await prisma.order.update({
-    where: { id },
-    data,
-    include: { orderItems: { include: { product: true } }, customer: true },
+    // Replace line items if provided: restore old stock, recreate, deduct, recompute total.
+    if (Array.isArray(body.items)) {
+      const items = body.items;
+      if (items.length === 0) throw new AppError(400, 'At least one order item is required');
+      for (const it of existing.orderItems) {
+        await tx.product.update({
+          where: { id: it.productId },
+          data: { stock: { increment: it.quantity } },
+        });
+      }
+      await tx.orderItem.deleteMany({ where: { orderId: id } });
+
+      let total = 0;
+      const lineItems: { productId: number; quantity: number; unitPrice: number }[] = [];
+      for (const item of items) {
+        const productId = parseRequiredNumber(item.productId, 'Product');
+        const quantity = parseRequiredNumber(item.quantity, 'Quantity');
+        if (quantity <= 0) throw new AppError(400, 'Quantity must be greater than zero');
+        const product = await tx.product.findUnique({ where: { id: productId } });
+        if (!product) throw new AppError(400, `Product ${productId} does not exist`);
+        const hasOverride =
+          item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '';
+        const unitPrice = hasOverride ? parseRequiredNumber(item.unitPrice, 'Unit price') : product.price;
+        if (unitPrice < 0) throw new AppError(400, 'Unit price cannot be negative');
+        total += unitPrice * quantity;
+        lineItems.push({ productId, quantity, unitPrice });
+      }
+      await tx.orderItem.createMany({ data: lineItems.map((li) => ({ ...li, orderId: id })) });
+      for (const li of lineItems) {
+        await tx.product.update({
+          where: { id: li.productId },
+          data: { stock: { decrement: li.quantity } },
+        });
+      }
+      data.totalAmount = total;
+    }
+
+    return tx.order.update({
+      where: { id },
+      data,
+      include: { orderItems: { include: { product: true } }, customer: true },
+    });
   });
+
   res.json(order);
 });
 
@@ -265,10 +292,6 @@ export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
       }
     }
 
-    // Drop the mirrored ledger income for this order (no-op if already cancelled)
-    await tx.finance.deleteMany({
-      where: { desc: orderLedgerDesc(existing.orderNumber), category: ORDER_SALES_CATEGORY },
-    });
     await tx.orderItem.deleteMany({ where: { orderId: id } });
     await tx.order.delete({ where: { id } });
   });

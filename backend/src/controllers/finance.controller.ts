@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { FinanceType, Prisma } from '@prisma/client';
+import { FinanceType, OrderStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError, asyncHandler } from '../lib/http';
-import { getMonthlyTotals } from '../lib/finance-stats';
+import { getMonthlyTotals, orderIncomeDate } from '../lib/finance-stats';
 import { parseId, parseRequiredNumber, strOrNull } from '../lib/parse';
 
 /** Converts a "YYYY-MM" string to a [gte, lt) date range, or null if malformed. */
@@ -46,6 +46,71 @@ function parseCustomerId(value: unknown): number | null {
   if (!Number.isInteger(id) || id <= 0) throw new AppError(400, 'Invalid customer');
   return id;
 }
+
+// GET /api/finance/ledger?month=&type=&sort= — merged ledger:
+// manual finance entries + DELIVERED orders surfaced as income (virtual rows).
+export const getLedger = asyncHandler(async (req: Request, res: Response) => {
+  const monthParam = typeof req.query.month === 'string' ? req.query.month : '';
+  const typeParam = typeof req.query.type === 'string' ? req.query.type.toUpperCase() : '';
+  const sort = typeof req.query.sort === 'string' ? req.query.sort : 'newest';
+
+  const [finance, orders] = await Promise.all([
+    prisma.finance.findMany({ include: { customer: { select: { name: true } } } }),
+    prisma.order.findMany({
+      where: { status: OrderStatus.DELIVERED },
+      include: { customer: { select: { name: true } } },
+    }),
+  ]);
+
+  const rows = [
+    ...finance.map((f) => ({
+      key: `f${f.id}`,
+      source: 'finance' as const,
+      financeId: f.id,
+      type: f.type as 'IN' | 'OUT',
+      date: f.date.toISOString(),
+      category: f.category,
+      desc: f.desc,
+      note: f.note,
+      amount: f.amount,
+      customerId: f.customerId,
+      customerName: f.customer?.name ?? null,
+    })),
+    ...orders.map((o) => ({
+      key: `o${o.id}`,
+      source: 'order' as const,
+      orderId: o.id,
+      type: 'IN' as const,
+      date: orderIncomeDate(o).toISOString(),
+      category: o.tag || 'Cookie Sales',
+      desc: `${o.orderNumber}${o.customer ? ' · ' + o.customer.name : ''}`,
+      note: null as string | null,
+      amount: o.totalAmount,
+      customerName: o.customer?.name ?? null,
+    })),
+  ];
+
+  let filtered = rows;
+  if (monthParam) {
+    const r = monthRange(monthParam);
+    if (!r) throw new AppError(400, 'month must be in YYYY-MM format');
+    filtered = filtered.filter((x) => {
+      const d = new Date(x.date);
+      return d >= r.gte && d < r.lt;
+    });
+  }
+  if (typeParam === 'IN' || typeParam === 'OUT') {
+    filtered = filtered.filter((x) => x.type === typeParam);
+  }
+  filtered.sort((a, b) => {
+    if (sort === 'highest') return b.amount - a.amount;
+    if (sort === 'lowest') return a.amount - b.amount;
+    if (sort === 'oldest') return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; // newest
+  });
+
+  res.json(filtered);
+});
 
 // GET /api/finance?month=YYYY-MM&type=IN&sort=newest
 export const listFinance = asyncHandler(async (req: Request, res: Response) => {

@@ -157,10 +157,10 @@ export function Home() {
       </section>
 
       {/* How to pre-order — FAQ popup */}
-      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order 🧈" maxWidth="max-w-md">
+      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order ⏲" maxWidth="max-w-md">
         <ol className="space-y-3 text-sm text-brand-muted">
           <li>
-            <span className="font-semibold text-brand-dark">Browse the menu</span> — choose the cookies you'd like.
+            <span className="font-semibold text-brand-dark">Browse the menu</span> — choose the cookies you'd like to order.
           </li>
           <li>
             <span className="font-semibold text-brand-dark">Place your order</span> — send us your order via{' '}
@@ -170,12 +170,13 @@ export function Home() {
             or WhatsApp.
           </li>
           <li>
-            <span className="font-semibold text-brand-dark">Baked fresh to order</span> — every batch is baked
-            after your order is placed, so please order in advance. (No same-day delivery.)
+            <span className="font-semibold text-brand-dark">Baked fresh for you</span> — each batch is baked
+            after your order is placed, we kindly ask you to order in advance. (please note: same-day delivery
+            isn't available)
           </li>
           <li>
-            <span className="font-semibold text-brand-dark">Delivery or pickup</span> — we'll confirm the
-            details with you over chat.
+            <span className="font-semibold text-brand-dark">Delivery or pick-up</span> — the details will be
+            arranged with you over chat.
           </li>
         </ol>
       </Modal>

@@ -12,6 +12,15 @@ export function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/** The date a delivered order is booked as income: delivery date, else completion, else placed. */
+export function orderIncomeDate(o: {
+  deliveryDate: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+}): Date {
+  return o.deliveryDate ?? o.completedAt ?? o.createdAt;
+}
+
 /** Returns IN/OUT/NET totals for each of the last `months` calendar months (oldest first). */
 export async function getMonthlyTotals(months: number): Promise<MonthlyTotal[]> {
   const now = new Date();
@@ -45,7 +54,8 @@ export async function getMonthlyTotals(months: number): Promise<MonthlyTotal[]> 
 
 /**
  * Monthly Sales vs Expenses for the last `months` months:
- * in = order revenue (non-cancelled), out = Finance OUT entries.
+ * in = revenue from DELIVERED orders (booked on their income date),
+ * out = Finance OUT entries.
  */
 export async function getMonthlySalesVsExpenses(months: number): Promise<MonthlyTotal[]> {
   const now = new Date();
@@ -53,8 +63,8 @@ export async function getMonthlySalesVsExpenses(months: number): Promise<Monthly
 
   const [orders, expenses] = await Promise.all([
     prisma.order.findMany({
-      where: { createdAt: { gte: start }, status: { not: OrderStatus.CANCELLED } },
-      select: { totalAmount: true, createdAt: true },
+      where: { status: OrderStatus.DELIVERED },
+      select: { totalAmount: true, deliveryDate: true, completedAt: true, createdAt: true },
     }),
     prisma.finance.findMany({
       where: { type: FinanceType.OUT, date: { gte: start } },
@@ -68,7 +78,7 @@ export async function getMonthlySalesVsExpenses(months: number): Promise<Monthly
     buckets.set(monthKey(d), { in: 0, out: 0 });
   }
   for (const o of orders) {
-    const b = buckets.get(monthKey(o.createdAt));
+    const b = buckets.get(monthKey(orderIncomeDate(o)));
     if (b) b.in += o.totalAmount;
   }
   for (const e of expenses) {

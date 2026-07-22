@@ -6,10 +6,12 @@ import { formatRM } from '../../lib/format';
 import { ORDER_TAGS } from '../../lib/order-tags';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import type { Order } from '../../types';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  order?: Order | null; // provided = edit mode
 }
 
 interface LineItem {
@@ -21,7 +23,8 @@ interface LineItem {
 const inputCls =
   'w-full rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary';
 
-export function OrderFormModal({ open, onClose }: Props) {
+export function OrderFormModal({ open, onClose, order }: Props) {
+  const isEdit = !!order;
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -48,16 +51,31 @@ export function OrderFormModal({ open, onClose }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    setCustomerId('');
     setNewCustomer(false);
     setNewName('');
     setNewEmail('');
-    setItems([{ productId: '', quantity: 1, unitPrice: '' }]);
-    setDeliveryDate('');
-    setPlacedDate(new Date().toISOString().slice(0, 10));
-    setNotes('');
-    setTag('');
-  }, [open]);
+    if (order) {
+      setCustomerId(order.customerId);
+      setItems(
+        (order.orderItems ?? []).map((it) => ({
+          productId: it.productId,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+        }))
+      );
+      setDeliveryDate(order.deliveryDate ? order.deliveryDate.slice(0, 10) : '');
+      setPlacedDate(order.createdAt.slice(0, 10));
+      setNotes(order.notes ?? '');
+      setTag(order.tag ?? '');
+    } else {
+      setCustomerId('');
+      setItems([{ productId: '', quantity: 1, unitPrice: '' }]);
+      setDeliveryDate('');
+      setPlacedDate(new Date().toISOString().slice(0, 10));
+      setNotes('');
+      setTag('');
+    }
+  }, [open, order]);
 
   const priceOf = (id: number | '') => products.find((p) => p.id === id)?.price ?? 0;
   const unitPriceOf = (it: LineItem) => (it.unitPrice === '' ? priceOf(it.productId) : it.unitPrice);
@@ -85,6 +103,16 @@ export function OrderFormModal({ open, onClose }: Props) {
           quantity: it.quantity,
           unitPrice: it.unitPrice === '' ? undefined : it.unitPrice,
         }));
+      if (order) {
+        return ordersApi.update(order.id, {
+          customerId: resolvedCustomerId as number,
+          items: lineItems,
+          notes: notes || null,
+          tag: tag || null,
+          deliveryDate: deliveryDate || null,
+          placedDate: placedDate || undefined,
+        });
+      }
       return ordersApi.create({
         customerId: resolvedCustomerId as number,
         items: lineItems,
@@ -96,13 +124,15 @@ export function OrderFormModal({ open, onClose }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.success('Order created');
+      queryClient.invalidateQueries({ queryKey: ['ledger'] });
+      toast.success(order ? 'Order updated' : 'Order created');
       onClose();
     },
-    onError: (err) => toast.error(apiErrorMessage(err, 'Could not create order')),
+    onError: (err) => toast.error(apiErrorMessage(err, order ? 'Could not update order' : 'Could not create order')),
   });
 
   const handleSubmit = (e: FormEvent) => {
@@ -122,14 +152,14 @@ export function OrderFormModal({ open, onClose }: Props) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Create Order"
+      title={isEdit ? 'Edit Order' : 'Create Order'}
       footer={
         <>
           <Button variant="ghost" onClick={onClose} disabled={mutation.isPending}>
             Cancel
           </Button>
           <Button type="submit" form="order-form" loading={mutation.isPending}>
-            Create order · {formatRM(total)}
+            {isEdit ? 'Save order' : 'Create order'} · {formatRM(total)}
           </Button>
         </>
       }

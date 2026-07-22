@@ -84,10 +84,26 @@ export interface Order {
   notes: string | null;
   tag: string | null;
   deliveryDate: string | null;
+  completedAt: string | null;
   orderItems?: OrderItem[];
   _count?: { orderItems: number };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface LedgerRow {
+  key: string;
+  source: 'finance' | 'order';
+  financeId?: number;
+  orderId?: number;
+  type: FinanceType;
+  date: string;
+  category: string;
+  desc: string;
+  note: string | null;
+  amount: number;
+  customerId?: number | null;
+  customerName: string | null;
 }
 
 export interface Finance {
