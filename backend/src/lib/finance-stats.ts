@@ -23,7 +23,7 @@ export function orderIncomeDate(o: {
   completedAt: Date | null;
   createdAt: Date;
 }): Date {
-  return o.createdAt;
+  return o.deliveryDate ?? o.completedAt ?? o.createdAt;
 }
 
 /** Returns IN/OUT/NET totals for each of the last `months` calendar months (oldest first). */
