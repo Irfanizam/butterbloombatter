@@ -13,10 +13,10 @@ export function monthKey(date: Date): string {
 }
 
 /**
- * The date a delivered order is booked as income: its placed date (createdAt).
- * The ledger reads as a journal by placed date, so an order sits where it was
- * created — not where it was delivered — matching how the admin back-dates
- * past sales. (deliveryDate/completedAt kept in the signature for callers.)
+ * The date a delivered order is booked as income: its delivery date (when
+ * payment is made), else completion, else placed date. Unlike manual entries
+ * (which sort by when they were recorded), an order sits in the ledger by its
+ * delivery date — that's the day the money actually came in.
  */
 export function orderIncomeDate(o: {
   deliveryDate: Date | null;
