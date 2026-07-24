@@ -9,7 +9,6 @@ import {
   listPublicProducts,
   toggleFeatured,
   updateProduct,
-  updateStock,
 } from '../controllers/product.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/role.middleware';
@@ -25,7 +24,6 @@ router.post('/', authenticate, requireAdmin, uploadSingleImage, createProduct);
 router.put('/:id', authenticate, requireAdmin, uploadSingleImage, updateProduct);
 router.delete('/:id', authenticate, requireAdmin, deleteProduct);
 
-router.patch('/:id/stock', authenticate, updateStock);
 router.patch('/:id/featured', authenticate, toggleFeatured);
 
 // Gallery images

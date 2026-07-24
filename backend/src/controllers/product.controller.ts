@@ -106,7 +106,6 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
   }
   const price = parseRequiredNumber(body.price, 'Price');
   const categoryId = parseRequiredNumber(body.categoryId, 'Category');
-  const stock = body.stock !== undefined ? parseRequiredNumber(body.stock, 'Stock') : 0;
   await ensureCategoryExists(categoryId);
 
   let imageUrl: string | null = null;
@@ -123,7 +122,6 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
       name,
       description: typeof body.description === 'string' ? body.description : null,
       price,
-      stock,
       isAvailable: parseBool(body.isAvailable, true),
       isFeatured: parseBool(body.isFeatured, false),
       categoryId,
@@ -150,7 +148,6 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
     data.description = typeof body.description === 'string' ? body.description : null;
   }
   if (body.price !== undefined) data.price = parseRequiredNumber(body.price, 'Price');
-  if (body.stock !== undefined) data.stock = parseRequiredNumber(body.stock, 'Stock');
   if (body.isAvailable !== undefined) data.isAvailable = parseBool(body.isAvailable, existing.isAvailable);
   if (body.isFeatured !== undefined) data.isFeatured = parseBool(body.isFeatured, existing.isFeatured);
   if (body.categoryId !== undefined) {
@@ -200,14 +197,6 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   }
   await prisma.product.delete({ where: { id } });
   res.status(204).send();
-});
-
-// PATCH /api/products/:id/stock  (protected)
-export const updateStock = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseId(req.params.id);
-  const stock = parseRequiredNumber((req.body as Record<string, unknown>).stock, 'Stock');
-  const product = await prisma.product.update({ where: { id }, data: { stock } });
-  res.json(product);
 });
 
 // PATCH /api/products/:id/featured  (protected) — toggle

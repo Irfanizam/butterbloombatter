@@ -114,15 +114,17 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
   if (typeParam === 'IN' || typeParam === 'OUT') {
     filtered = filtered.filter((x) => x.type === typeParam);
   }
-  // Journal order: primary by transaction date, tie-broken by when the row was
-  // created — so same-day entries read newest-created on top, and an order sits
-  // by its placed date (its createdAt) regardless of when it was delivered.
+  // Journal order: primary by transaction date; on the same date, expenses come
+  // before income (so an order's payment sits below same-day expenses); finally
+  // tie-broken by when the row was created.
   const cmp = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
+  const typeRank = (t: 'IN' | 'OUT') => (t === 'OUT' ? 0 : 1); // expenses first
   filtered.sort((a, b) => {
     if (sort === 'highest') return b.amount - a.amount || cmp(b.createdAt, a.createdAt);
     if (sort === 'lowest') return a.amount - b.amount || cmp(a.createdAt, b.createdAt);
-    if (sort === 'oldest') return cmp(a.date, b.date) || cmp(a.createdAt, b.createdAt);
-    return cmp(b.date, a.date) || cmp(b.createdAt, a.createdAt); // newest
+    if (sort === 'oldest')
+      return cmp(a.date, b.date) || typeRank(a.type) - typeRank(b.type) || cmp(a.createdAt, b.createdAt);
+    return cmp(b.date, a.date) || typeRank(a.type) - typeRank(b.type) || cmp(b.createdAt, a.createdAt); // newest
   });
 
   res.json(filtered);

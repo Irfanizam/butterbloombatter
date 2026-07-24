@@ -36,7 +36,6 @@ model Product {
   name          String
   description   String?
   price         Float
-  stock         Int         @default(0)
   imageUrl      String? // Cloudinary URL
   imagePublicId String? // Cloudinary public_id (for deletion)
   isAvailable   Boolean        @default(true)

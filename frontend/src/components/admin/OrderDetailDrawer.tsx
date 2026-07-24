@@ -158,7 +158,7 @@ export function OrderDetailDrawer({ orderId, onClose, onEdit }: Props) {
               </Button>
             </div>
             <p className="mt-2 text-xs text-brand-faded">
-              Cancelling restores stock. Last updated {formatDate(order.updatedAt)}.
+              Last updated {formatDate(order.updatedAt)}.
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export function OrderDetailDrawer({ orderId, onClose, onEdit }: Props) {
                 Delete order
               </Button>
               <p className="mt-2 text-xs text-brand-faded">
-                Permanently removes this order. Stock is restored (unless already cancelled).
+                Permanently removes this order.
               </p>
             </div>
           )}
