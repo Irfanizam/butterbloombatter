@@ -28,7 +28,7 @@ export function Products() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | 'all'>('all');
   const [availability, setAvailability] = useState<AvailabilityFilter>('all');
-  const [sort, setSort] = useState<'newest' | 'name' | 'price-asc' | 'price-desc' | 'stock-asc'>('newest');
+  const [sort, setSort] = useState<'newest' | 'name' | 'price-asc' | 'price-desc'>('newest');
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
@@ -76,7 +76,6 @@ export function Products() {
     if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
     else if (sort === 'price-asc') list.sort((a, b) => a.price - b.price);
     else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
-    else if (sort === 'stock-asc') list.sort((a, b) => a.stock - b.stock);
     else list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return list;
   }, [products, search, categoryFilter, availability, sort]);
@@ -136,7 +135,6 @@ export function Products() {
           <option value="name">Sort: Name</option>
           <option value="price-asc">Sort: Price ↑</option>
           <option value="price-desc">Sort: Price ↓</option>
-          <option value="stock-asc">Sort: Stock ↑</option>
         </select>
       </div>
 
@@ -178,11 +176,7 @@ export function Products() {
                     {p.category.emoji} {p.category.name}
                   </Badge>
                 )}
-                <div className="flex items-center justify-between text-sm text-brand-muted">
-                  <span>
-                    Stock:{' '}
-                    <span className={p.stock < 10 ? 'font-semibold text-brand-red' : ''}>{p.stock}</span>
-                  </span>
+                <div className="flex items-center justify-end text-sm text-brand-muted">
                   <span className="flex items-center gap-2">
                     Sale
                     <Toggle

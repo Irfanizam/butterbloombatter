@@ -27,7 +27,6 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
   const [categoryId, setCategoryId] = useState<number | ''>('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
   const [isAvailable, setIsAvailable] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -73,7 +72,6 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
     setCategoryId(product?.categoryId ?? (categories[0]?.id ?? ''));
     setDescription(product?.description ?? '');
     setPrice(product ? String(product.price) : '');
-    setStock(product ? String(product.stock) : '');
     setIsAvailable(product?.isAvailable ?? true);
     setIsFeatured(product?.isFeatured ?? false);
     setImageFile(null);
@@ -108,7 +106,6 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
       fd.append('categoryId', String(categoryId));
       fd.append('description', description);
       fd.append('price', price);
-      fd.append('stock', stock || '0');
       fd.append('isAvailable', String(isAvailable));
       fd.append('isFeatured', String(isFeatured));
       if (imageFile) fd.append('image', imageFile);
@@ -190,28 +187,17 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Price (RM) *">
-            <input
-              className={inputCls}
-              type="number"
-              step="0.01"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Stock (optional · pre-order)">
-            <input
-              className={inputCls}
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              placeholder="Leave blank for pre-order"
-            />
-          </Field>
-        </div>
+        <Field label="Price (RM) *">
+          <input
+            className={inputCls}
+            type="number"
+            step="0.01"
+            min="0"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+        </Field>
 
         <div className="flex items-center justify-between rounded-brand bg-brand-soft px-3 py-2">
           <span className="text-sm font-medium text-brand-dark">Available for sale</span>

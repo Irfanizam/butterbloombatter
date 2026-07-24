@@ -1,4 +1,5 @@
 import type { OrderStatus } from '../../types';
+import { ORDER_STATUS_LABEL } from '../../lib/order-status';
 
 const statusStyles: Record<OrderStatus, string> = {
   PENDING: 'bg-brand-accent-light text-brand-gold',
@@ -14,7 +15,7 @@ export function StatusBadge({ status }: { status: OrderStatus }) {
     <span
       className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyles[status]}`}
     >
-      {status}
+      {ORDER_STATUS_LABEL[status]}
     </span>
   );
 }

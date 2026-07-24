@@ -68,14 +68,14 @@ async function main(): Promise<void> {
 
   // --- Products ---
   const productData = [
-    { name: 'Butter Classic Rounds', price: 12.0, stock: 25, isFeatured: true, category: 'Classic', description: 'Buttery shortbread rounds, our signature bake.' },
-    { name: 'Double Chocolate Chunk', price: 15.0, stock: 18, isFeatured: true, category: 'Chocolate', description: 'Rich cocoa cookies loaded with chocolate chunks.' },
-    { name: 'Strawberry Shortbread', price: 13.5, stock: 12, category: 'Fruity', description: 'Crumbly shortbread with real strawberry.' },
-    { name: 'Salted Caramel Crinkle', price: 14.0, stock: 8, category: 'Chocolate', description: 'Gooey salted caramel with a crinkle top.' },
-    { name: 'Matcha Almond Biscotti', price: 16.0, stock: 5, category: 'Classic', description: 'Crunchy matcha biscotti with toasted almonds.' },
-    { name: 'Oatmeal Raisin Classic', price: 11.0, stock: 30, category: 'Classic', description: 'Chewy oatmeal cookies with plump raisins.' },
-    { name: 'Festive Snowflake Set', price: 22.0, stock: 0, isAvailable: false, category: 'Seasonal', description: 'Decorated snowflake cookies for the holidays.' },
-    { name: 'Custom Name Cookies', price: 25.0, stock: 15, isFeatured: true, category: 'Custom', description: 'Personalised iced cookies with any name.' },
+    { name: 'Butter Classic Rounds', price: 12.0, isFeatured: true, category: 'Classic', description: 'Buttery shortbread rounds, our signature bake.' },
+    { name: 'Double Chocolate Chunk', price: 15.0, isFeatured: true, category: 'Chocolate', description: 'Rich cocoa cookies loaded with chocolate chunks.' },
+    { name: 'Strawberry Shortbread', price: 13.5, category: 'Fruity', description: 'Crumbly shortbread with real strawberry.' },
+    { name: 'Salted Caramel Crinkle', price: 14.0, category: 'Chocolate', description: 'Gooey salted caramel with a crinkle top.' },
+    { name: 'Matcha Almond Biscotti', price: 16.0, category: 'Classic', description: 'Crunchy matcha biscotti with toasted almonds.' },
+    { name: 'Oatmeal Raisin Classic', price: 11.0, category: 'Classic', description: 'Chewy oatmeal cookies with plump raisins.' },
+    { name: 'Festive Snowflake Set', price: 22.0, isAvailable: false, category: 'Seasonal', description: 'Decorated snowflake cookies for the holidays.' },
+    { name: 'Custom Name Cookies', price: 25.0, isFeatured: true, category: 'Custom', description: 'Personalised iced cookies with any name.' },
   ];
   const products: Record<string, number> = {};
   for (const p of productData) {
@@ -84,7 +84,6 @@ async function main(): Promise<void> {
         name: p.name,
         description: p.description,
         price: p.price,
-        stock: p.stock,
         isAvailable: p.isAvailable ?? true,
         isFeatured: p.isFeatured ?? false,
         categoryId: categories[p.category],
@@ -105,7 +104,7 @@ async function main(): Promise<void> {
     customers[c.email] = created.id;
   }
 
-  // --- Orders (product stock above is the current value, so we don't re-deduct here) ---
+  // --- Orders ---
   const orderData: {
     orderNumber: string;
     customerEmail: string;
@@ -142,7 +141,7 @@ async function main(): Promise<void> {
   // --- Finance (spread across the last 3 months for the chart) ---
   const financeData = [
     { type: 'IN' as const, amount: 450, desc: 'Weekend cookie sales', category: 'Orders', date: monthsAgo(0, 5) },
-    { type: 'OUT' as const, amount: 180, desc: 'Flour and butter restock', category: 'Ingredients', date: monthsAgo(0, 3) },
+    { type: 'OUT' as const, amount: 180, desc: 'Flour and butter supplies', category: 'Ingredients', date: monthsAgo(0, 3) },
     { type: 'IN' as const, amount: 250, desc: 'Custom birthday order', category: 'Orders', date: monthsAgo(0, 10) },
     { type: 'IN' as const, amount: 200, desc: 'Walk-in sales', category: 'Other Income', date: monthsAgo(0, 18) },
     { type: 'OUT' as const, amount: 90, desc: 'Gift boxes and ribbons', category: 'Packaging', date: monthsAgo(1, 12) },

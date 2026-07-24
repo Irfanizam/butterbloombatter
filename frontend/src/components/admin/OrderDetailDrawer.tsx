@@ -8,6 +8,7 @@ import { Drawer } from '../ui/Drawer';
 import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
 import { StatusBadge } from '../ui/Badge';
+import { ORDER_STATUS_LABEL } from '../../lib/order-status';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { ReceiptModal } from './ReceiptModal';
 import type { Order, OrderStatus } from '../../types';
@@ -144,7 +145,7 @@ export function OrderDetailDrawer({ orderId, onClose, onEdit }: Props) {
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {ORDER_STATUS_LABEL[s]}
                   </option>
                 ))}
               </select>
@@ -157,7 +158,7 @@ export function OrderDetailDrawer({ orderId, onClose, onEdit }: Props) {
               </Button>
             </div>
             <p className="mt-2 text-xs text-brand-faded">
-              Cancelling restores stock. Last updated {formatDate(order.updatedAt)}.
+              Last updated {formatDate(order.updatedAt)}.
             </p>
           </div>
 
@@ -199,7 +200,7 @@ export function OrderDetailDrawer({ orderId, onClose, onEdit }: Props) {
                 Delete order
               </Button>
               <p className="mt-2 text-xs text-brand-faded">
-                Permanently removes this order. Stock is restored (unless already cancelled).
+                Permanently removes this order.
               </p>
             </div>
           )}

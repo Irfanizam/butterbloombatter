@@ -79,7 +79,7 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
   res.json(order);
 });
 
-// POST /api/orders — creates the order and deducts stock atomically
+// POST /api/orders — creates the order
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) throw new AppError(401, 'Authentication required');
   const staffId = req.user.id;
@@ -121,8 +121,6 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
         item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '';
       const unitPrice = hasOverride ? parseRequiredNumber(item.unitPrice, 'Unit price') : product.price;
       if (unitPrice < 0) throw new AppError(400, 'Unit price cannot be negative');
-      // Pre-order business: orders are never blocked by stock. Stock still
-      // decrements (may go negative) as a bake-to-order backlog indicator.
       total += unitPrice * quantity;
       lineItems.push({ productId, quantity, unitPrice });
     }
@@ -145,20 +143,13 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
       include: { orderItems: { include: { product: true } }, customer: true },
     });
 
-    for (const item of lineItems) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { stock: { decrement: item.quantity } },
-      });
-    }
-
     return created;
   });
 
   res.status(201).json(order);
 });
 
-// PATCH /api/orders/:id/status — restores stock when cancelling
+// PATCH /api/orders/:id/status
 export const updateOrderStatus = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id);
   const body = req.body as { status?: unknown };
@@ -168,15 +159,6 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
   const order = await prisma.$transaction(async (tx) => {
     const existing = await tx.order.findUnique({ where: { id }, include: { orderItems: true } });
     if (!existing) throw new AppError(404, 'Order not found');
-
-    if (status === OrderStatus.CANCELLED && existing.status !== OrderStatus.CANCELLED) {
-      for (const item of existing.orderItems) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
-    }
 
     // Stamp completion when entering DELIVERED; clear it when leaving.
     const data: Prisma.OrderUpdateInput = { status };
@@ -229,16 +211,10 @@ export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
       data.customer = { connect: { id: cid } };
     }
 
-    // Replace line items if provided: restore old stock, recreate, deduct, recompute total.
+    // Replace line items if provided: recreate and recompute total.
     if (Array.isArray(body.items)) {
       const items = body.items;
       if (items.length === 0) throw new AppError(400, 'At least one order item is required');
-      for (const it of existing.orderItems) {
-        await tx.product.update({
-          where: { id: it.productId },
-          data: { stock: { increment: it.quantity } },
-        });
-      }
       await tx.orderItem.deleteMany({ where: { orderId: id } });
 
       let total = 0;
@@ -257,12 +233,6 @@ export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
         lineItems.push({ productId, quantity, unitPrice });
       }
       await tx.orderItem.createMany({ data: lineItems.map((li) => ({ ...li, orderId: id })) });
-      for (const li of lineItems) {
-        await tx.product.update({
-          where: { id: li.productId },
-          data: { stock: { decrement: li.quantity } },
-        });
-      }
       data.totalAmount = total;
     }
 
@@ -276,21 +246,12 @@ export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
   res.json(order);
 });
 
-// DELETE /api/orders/:id (ADMIN) — restores stock unless already cancelled
+// DELETE /api/orders/:id (ADMIN)
 export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
   const id = parseId(req.params.id);
   await prisma.$transaction(async (tx) => {
-    const existing = await tx.order.findUnique({ where: { id }, include: { orderItems: true } });
+    const existing = await tx.order.findUnique({ where: { id } });
     if (!existing) throw new AppError(404, 'Order not found');
-
-    if (existing.status !== OrderStatus.CANCELLED) {
-      for (const item of existing.orderItems) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
-    }
 
     await tx.orderItem.deleteMany({ where: { orderId: id } });
     await tx.order.delete({ where: { id } });

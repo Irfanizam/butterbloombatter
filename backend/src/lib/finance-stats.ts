@@ -13,6 +13,13 @@ export function monthKey(date: Date): string {
 }
 
 /**
+ * Finance IN categories that are NOT counted as sales revenue — owner capital
+ * injections (savings / i-fund). Every other IN entry (custom fees, delivery
+ * charges, "Other Income") counts toward revenue alongside delivered orders.
+ */
+export const NON_REVENUE_IN_CATEGORIES = ['Capital / Top-up'];
+
+/**
  * The date a delivered order is booked as income: its delivery date (when
  * payment is made), else completion, else placed date. Unlike manual entries
  * (which sort by when they were recorded), an order sits in the ledger by its
@@ -66,13 +73,23 @@ export async function getMonthlySalesVsExpenses(months: number): Promise<Monthly
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
-  const [orders, expenses] = await Promise.all([
+  const [orders, expenses, manualIncome] = await Promise.all([
     prisma.order.findMany({
       where: { status: OrderStatus.DELIVERED },
       select: { totalAmount: true, deliveryDate: true, completedAt: true, createdAt: true },
     }),
     prisma.finance.findMany({
       where: { type: FinanceType.OUT, date: { gte: start } },
+      select: { amount: true, date: true },
+    }),
+    // Manual income (custom fees, delivery charges, etc.) counts as revenue too,
+    // excluding owner capital injections.
+    prisma.finance.findMany({
+      where: {
+        type: FinanceType.IN,
+        date: { gte: start },
+        NOT: { category: { in: NON_REVENUE_IN_CATEGORIES } },
+      },
       select: { amount: true, date: true },
     }),
   ]);
@@ -85,6 +102,10 @@ export async function getMonthlySalesVsExpenses(months: number): Promise<Monthly
   for (const o of orders) {
     const b = buckets.get(monthKey(orderIncomeDate(o)));
     if (b) b.in += o.totalAmount;
+  }
+  for (const m of manualIncome) {
+    const b = buckets.get(monthKey(m.date));
+    if (b) b.in += m.amount;
   }
   for (const e of expenses) {
     const b = buckets.get(monthKey(e.date));

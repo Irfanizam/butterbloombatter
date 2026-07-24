@@ -101,8 +101,6 @@ export const productsApi = {
   update: (id: number, data: FormData, onUploadProgress?: (e: AxiosProgressEvent) => void) =>
     api.put(`/api/products/${id}`, data, { onUploadProgress }).then((r) => r.data as Product),
   remove: (id: number) => api.delete(`/api/products/${id}`),
-  setStock: (id: number, stock: number) =>
-    api.patch(`/api/products/${id}/stock`, { stock }).then((r) => r.data as Product),
   toggleFeatured: (id: number) => api.patch(`/api/products/${id}/featured`).then((r) => r.data as Product),
   addImages: (id: number, data: FormData) =>
     api.post(`/api/products/${id}/images`, data).then((r) => r.data as Product),
