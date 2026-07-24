@@ -203,7 +203,7 @@ export function OrderFormModal({ open, onClose, order }: Props) {
         <div>
           <span className="mb-1 block text-sm font-semibold text-brand-dark">Items *</span>
           <p className="mb-2 text-xs text-brand-faded">
-            Price defaults to the product's current price — edit it for back-dated orders placed at an older price.
+            Price defaults to the product's current price — edit it for back-dated orders or custom orders.
           </p>
           <div className="space-y-2">
             {items.map((it, idx) => (

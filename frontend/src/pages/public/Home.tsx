@@ -157,7 +157,7 @@ export function Home() {
       </section>
 
       {/* How to pre-order — FAQ popup */}
-      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order ⏲" maxWidth="max-w-md">
+      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order ⏲" maxWidth="max-w-lg">
         <ol className="space-y-3 text-sm text-brand-muted">
           <li>
             <span className="font-semibold text-brand-dark">Browse the menu</span> — choose the cookies you'd like to order.

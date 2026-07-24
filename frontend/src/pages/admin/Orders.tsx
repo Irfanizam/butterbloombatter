@@ -8,6 +8,7 @@ import { OrderDetailDrawer } from '../../components/admin/OrderDetailDrawer';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/Badge';
+import { ORDER_STATUS_LABEL } from '../../lib/order-status';
 import type { Order, OrderStatus } from '../../types';
 
 const TABS: ('ALL' | OrderStatus)[] = [
@@ -67,7 +68,7 @@ export function Orders() {
               tab === t ? 'bg-hero text-white' : 'bg-white text-brand-muted hover:bg-brand-soft'
             }`}
           >
-            {t === 'ALL' ? 'All' : t.charAt(0) + t.slice(1).toLowerCase()}
+            {t === 'ALL' ? 'All' : ORDER_STATUS_LABEL[t]}
             <span className="ml-1.5 text-xs opacity-80">{counts[t] ?? 0}</span>
           </button>
         ))}

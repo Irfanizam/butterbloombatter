@@ -96,7 +96,6 @@ export function Customers() {
             <thead className="bg-brand-soft text-left text-brand-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">Name</th>
-                <th className="px-4 py-3 font-semibold">Email</th>
                 <th className="px-4 py-3 font-semibold">Phone</th>
                 <th className="px-4 py-3 font-semibold">Orders</th>
                 <th className="px-4 py-3 font-semibold">Joined</th>
@@ -118,7 +117,6 @@ export function Customers() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-brand-muted">{c.email ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-muted">{c.phone ?? '—'}</td>
                   <td className="px-4 py-3 text-brand-muted">{c._count?.orders ?? 0}</td>
                   <td className="px-4 py-3 text-brand-faded">{formatDate(c.joinedDate ?? c.createdAt)}</td>
@@ -136,7 +134,7 @@ export function Customers() {
               ))}
               {customers?.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-brand-faded">
+                  <td colSpan={5} className="px-4 py-10 text-center text-brand-faded">
                     No customers found.
                   </td>
                 </tr>

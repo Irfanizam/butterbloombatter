@@ -5,7 +5,7 @@ export function Contact() {
     <div className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="mb-2 text-center text-3xl font-bold text-brand-dark">Get in Touch</h1>
       <p className="mb-8 text-center text-brand-muted">
-        Questions, custom orders, or just to say hi — message us on WhatsApp and we'll help you out.
+        Inquiries, custom orders, or just to say hi — we'd love to hear from you.
       </p>
 
       <div className="rounded-brand-lg border border-brand-border-soft bg-white p-6 text-center shadow-brand-sm">

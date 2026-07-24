@@ -37,7 +37,6 @@ export interface Product {
   name: string;
   description: string | null;
   price: number;
-  stock: number;
   imageUrl: string | null;
   imagePublicId: string | null;
   isAvailable: boolean;
@@ -135,7 +134,6 @@ export interface DashboardData {
   monthRevenue: number;
   monthExpenses: number;
   monthNet: number;
-  lowStockProducts: Product[];
   recentOrders: Order[];
   ordersByStatus: Record<string, number>;
   monthlyChart: MonthlyTotal[];
