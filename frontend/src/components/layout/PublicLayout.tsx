@@ -12,19 +12,19 @@ export function PublicLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-brand-bg">
       <header className="sticky top-0 z-40 border-b border-brand-border-soft bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🍪</span>
-            <span className="font-bold text-brand-dark">ButterBloomBatter</span>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-4 sm:px-4">
+          <Link to="/" className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-xl sm:text-2xl">🍪</span>
+            <span className="truncate text-sm font-bold text-brand-dark sm:text-base">ButterBloomBatter</span>
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav className="flex shrink-0 items-center gap-0.5 sm:gap-1">
             {links.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 end={l.end}
                 className={({ isActive }) =>
-                  `rounded-brand px-3 py-2 text-sm font-semibold transition-colors ${
+                  `rounded-brand px-2.5 py-2 text-sm font-semibold transition-colors sm:px-3 ${
                     isActive ? 'text-brand-primary' : 'text-brand-muted hover:text-brand-dark'
                   }`
                 }
