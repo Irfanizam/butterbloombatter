@@ -80,7 +80,7 @@ export function AdminLayout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-x-clip">
+      <main className="min-w-0 flex-1 overflow-x-clip">
         <Outlet />
       </main>
     </div>
