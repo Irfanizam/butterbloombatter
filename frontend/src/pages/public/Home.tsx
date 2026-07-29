@@ -90,6 +90,34 @@ export function Home() {
         </div>
       </section>
 
+      {/* How to pre-order */}
+      <section className="mx-auto max-w-5xl px-4 pt-16">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-brand-dark">How to pre-order 💌</h2>
+          <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-brand-primary" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: '🍪', title: 'Browse the menu', text: 'Pick the cookies you’d like to order.' },
+            { icon: '💬', title: 'Send your order', text: 'Message us via Contact or WhatsApp.' },
+            { icon: '🧈', title: 'Baked fresh', text: 'We bake after you order, so kindly order ahead — no same-day.' },
+            { icon: '🚚', title: 'Delivery or pick-up', text: 'We’ll arrange the details with you over chat.' },
+          ].map((step, i) => (
+            <div
+              key={step.title}
+              className="relative rounded-brand-lg border border-brand-border-soft bg-white p-5 text-center shadow-brand-sm"
+            >
+              <span className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand-primary">
+                {i + 1}
+              </span>
+              <div className="text-3xl">{step.icon}</div>
+              <h3 className="mt-2 font-bold text-brand-dark">{step.title}</h3>
+              <p className="mt-1 text-sm text-brand-muted">{step.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Featured */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-8 text-center">
@@ -157,7 +185,7 @@ export function Home() {
       </section>
 
       {/* How to pre-order — FAQ popup */}
-      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order ⏲" maxWidth="max-w-lg">
+      <Modal open={faqOpen} onClose={() => setFaqOpen(false)} title="How to pre-order 💌" maxWidth="max-w-lg">
         <ol className="space-y-3 text-sm text-brand-muted">
           <li>
             <span className="font-semibold text-brand-dark">Browse the menu</span> — choose the cookies you'd like to order.
