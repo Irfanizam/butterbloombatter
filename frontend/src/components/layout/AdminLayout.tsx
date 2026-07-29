@@ -30,7 +30,7 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-brand-bg">
+    <div className="flex min-h-screen w-full overflow-x-clip bg-brand-bg">
       <aside className="sticky top-0 flex h-screen w-16 flex-col self-start bg-white shadow-brand md:w-64">
         <div className="flex items-center gap-2 border-b border-brand-border-soft px-4 py-5">
           <span className="text-2xl">🍪</span>
