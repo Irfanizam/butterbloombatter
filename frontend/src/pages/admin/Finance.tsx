@@ -218,9 +218,9 @@ export function Finance() {
           <Spinner className="h-8 w-8" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-brand-lg border border-brand-border-soft bg-white shadow-brand-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-brand-soft text-left text-brand-muted">
+        <div className="max-h-[65vh] overflow-auto overscroll-contain rounded-brand-lg border border-brand-border-soft bg-white shadow-brand-sm">
+          <table className="w-full min-w-[34rem] text-sm">
+            <thead className="sticky top-0 z-10 bg-brand-soft text-left text-brand-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">Date</th>
                 <th className="px-4 py-3 font-semibold">Description</th>
