@@ -122,6 +122,7 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
       name,
       description: typeof body.description === 'string' ? body.description : null,
       price,
+      pieces: body.pieces !== undefined && body.pieces !== '' ? parseRequiredNumber(body.pieces, 'Pieces') : null,
       isAvailable: parseBool(body.isAvailable, true),
       isFeatured: parseBool(body.isFeatured, false),
       categoryId,
@@ -148,6 +149,9 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
     data.description = typeof body.description === 'string' ? body.description : null;
   }
   if (body.price !== undefined) data.price = parseRequiredNumber(body.price, 'Price');
+  if (body.pieces !== undefined) {
+    data.pieces = body.pieces === '' || body.pieces === null ? null : parseRequiredNumber(body.pieces, 'Pieces');
+  }
   if (body.isAvailable !== undefined) data.isAvailable = parseBool(body.isAvailable, existing.isAvailable);
   if (body.isFeatured !== undefined) data.isFeatured = parseBool(body.isFeatured, existing.isFeatured);
   if (body.categoryId !== undefined) {

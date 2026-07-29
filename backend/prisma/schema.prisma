@@ -36,6 +36,7 @@ model Product {
   name          String
   description   String?
   price         Float
+  pieces        Int? // cookies per box/order (shown on the storefront)
   imageUrl      String? // Cloudinary URL
   imagePublicId String? // Cloudinary public_id (for deletion)
   isAvailable   Boolean        @default(true)
