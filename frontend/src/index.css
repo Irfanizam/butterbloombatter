@@ -6,6 +6,14 @@
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
 }
 
+html,
+body {
+  /* Guard against sideways scroll from full-bleed/decorative elements.
+     `clip` (not `hidden`) doesn't create a scroll container, so the
+     sticky header keeps working. */
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   background: #fff6e6;
