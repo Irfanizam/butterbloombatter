@@ -34,31 +34,44 @@ export function Menu() {
         Baked fresh in small batches, from the oven to your hands.
       </p>
 
-      {/* Allergen info — cute note */}
-      <div className="mb-6 rounded-brand-lg border border-brand-border-soft bg-brand-soft p-4 shadow-brand-sm">
-        <p className="mb-2 text-sm font-bold text-brand-dark">🥜 A little allergen note</p>
-        <p className="mb-3 text-sm text-brand-muted">
-          Our cookies are baked with love in a home kitchen, so they may contain (or have touched) these
-          friends:
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { emoji: '🌾', label: 'Wheat / Gluten' },
-            { emoji: '🧈', label: 'Butter / Dairy' },
-            { emoji: '🥚', label: 'Egg' },
-            { emoji: '🥜', label: 'Nuts' },
-          ].map((a) => (
-            <span
-              key={a.label}
-              className="rounded-full border border-brand-border-soft bg-white px-3 py-1 text-xs font-semibold text-brand-dark shadow-brand-sm"
-            >
-              {a.emoji} {a.label}
-            </span>
-          ))}
+      {/* Allergen info — cute recipe-note sticker */}
+      <div className="relative mb-8 mt-3">
+        {/* peeking sticker badge */}
+        <div className="absolute -top-3 left-6 z-10 -rotate-6 rounded-full bg-white px-3 py-1 text-xs font-bold text-brand-dark shadow-brand-sm ring-2 ring-brand-accent-light">
+          🍪 good to know!
         </div>
-        <p className="mt-3 text-xs text-brand-faded">
-          Have an allergy? Just tell us when you order and we'll do our best 💛
-        </p>
+        <div className="relative overflow-hidden rounded-brand-lg border-2 border-dashed border-brand-primary/30 bg-gradient-to-br from-brand-accent-light/60 via-brand-soft to-white p-5 pt-8 shadow-brand-sm">
+          {/* playful background bake */}
+          <span className="pointer-events-none absolute -right-2 top-4 select-none text-6xl opacity-10">🧁</span>
+          <p className="relative mb-3 max-w-lg text-sm text-brand-muted">
+            Everything’s baked with love in a little home kitchen — so our cookies might hold hands with a
+            few of these:
+          </p>
+          <div className="relative flex flex-wrap gap-3">
+            {[
+              { emoji: '🌾', label: 'Wheat / Gluten', tint: 'bg-brand-accent-light' },
+              { emoji: '🧈', label: 'Butter / Dairy', tint: 'bg-brand-light' },
+              { emoji: '🥚', label: 'Egg', tint: 'bg-brand-soft' },
+              { emoji: '🥜', label: 'Nuts', tint: 'bg-brand-green-light' },
+            ].map((a) => (
+              <span
+                key={a.label}
+                className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2"
+              >
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-sm transition-transform group-hover:scale-110 ${a.tint}`}
+                >
+                  {a.emoji}
+                </span>
+                {a.label}
+              </span>
+            ))}
+          </div>
+          <p className="relative mt-4 flex items-center gap-1.5 text-xs text-brand-faded">
+            <span className="text-sm">💛</span> Got an allergy? Pop it in your order note and we’ll take extra
+            care of you.
+          </p>
+        </div>
       </div>
 
       {/* Category tabs */}

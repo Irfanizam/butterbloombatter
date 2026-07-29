@@ -65,7 +65,7 @@ export function Home() {
               onClick={() => setFaqOpen(true)}
               className="rounded-brand border border-white/60 px-7 py-3 font-semibold text-white transition-colors hover:bg-white/10"
             >
-              How to pre-order
+              How to pre-order 💌
             </button>
           </div>
           <p className="mt-6 text-sm lowercase text-white/70">pure butter · small batches · cookie favors</p>
@@ -85,34 +85,6 @@ export function Home() {
               <div className="text-3xl">{h.icon}</div>
               <h3 className="mt-2 font-bold text-brand-dark">{h.title}</h3>
               <p className="mt-1 text-sm text-brand-muted">{h.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How to pre-order */}
-      <section className="mx-auto max-w-5xl px-4 pt-16">
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-brand-dark">How to pre-order 💌</h2>
-          <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-brand-primary" />
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icon: '🍪', title: 'Browse the menu', text: 'Pick the cookies you’d like to order.' },
-            { icon: '💬', title: 'Send your order', text: 'Message us via Contact or WhatsApp.' },
-            { icon: '🧈', title: 'Baked fresh', text: 'We bake after you order, so kindly order ahead — no same-day.' },
-            { icon: '🚚', title: 'Delivery or pick-up', text: 'We’ll arrange the details with you over chat.' },
-          ].map((step, i) => (
-            <div
-              key={step.title}
-              className="relative rounded-brand-lg border border-brand-border-soft bg-white p-5 text-center shadow-brand-sm"
-            >
-              <span className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand-primary">
-                {i + 1}
-              </span>
-              <div className="text-3xl">{step.icon}</div>
-              <h3 className="mt-2 font-bold text-brand-dark">{step.title}</h3>
-              <p className="mt-1 text-sm text-brand-muted">{step.text}</p>
             </div>
           ))}
         </div>
