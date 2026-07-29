@@ -34,6 +34,33 @@ export function Menu() {
         Baked fresh in small batches, from the oven to your hands.
       </p>
 
+      {/* Allergen info — cute note */}
+      <div className="mb-6 rounded-brand-lg border border-brand-border-soft bg-brand-soft p-4 shadow-brand-sm">
+        <p className="mb-2 text-sm font-bold text-brand-dark">🥜 A little allergen note</p>
+        <p className="mb-3 text-sm text-brand-muted">
+          Our cookies are baked with love in a home kitchen, so they may contain (or have touched) these
+          friends:
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { emoji: '🌾', label: 'Wheat / Gluten' },
+            { emoji: '🧈', label: 'Butter / Dairy' },
+            { emoji: '🥚', label: 'Egg' },
+            { emoji: '🥜', label: 'Nuts' },
+          ].map((a) => (
+            <span
+              key={a.label}
+              className="rounded-full border border-brand-border-soft bg-white px-3 py-1 text-xs font-semibold text-brand-dark shadow-brand-sm"
+            >
+              {a.emoji} {a.label}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-brand-faded">
+          Have an allergy? Just tell us when you order and we'll do our best 💛
+        </p>
+      </div>
+
       {/* Category tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
         <button
