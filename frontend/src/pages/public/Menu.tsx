@@ -37,16 +37,18 @@ export function Menu() {
       {/* Allergen info — cute recipe-note sticker */}
       <div className="relative mb-8 mt-3">
         <div className="relative overflow-hidden rounded-brand-lg border-2 border-dashed border-brand-primary/30 bg-gradient-to-br from-brand-accent-light/60 via-brand-soft to-white p-5 shadow-brand-sm">
-          <h2 className="mb-1 text-base font-bold text-brand-dark">🍪 A little note before you order</h2>
-          <p className="mb-3 max-w-lg text-sm text-brand-muted">
+          {/* playful background cookie */}
+          <span className="pointer-events-none absolute -right-2 top-3 select-none text-6xl opacity-10">🍪</span>
+          <h2 className="relative mb-1 text-base font-bold text-brand-dark">📝 A little note before you order</h2>
+          <p className="relative mb-3 max-w-lg text-sm text-brand-muted">
             Our cookies are made with simple ingredients. Depending on the flavour, they contain:
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="relative flex flex-wrap gap-3">
             {[
-              { emoji: '🧈', label: 'Dairy (including butter)', note: '', tint: 'bg-brand-light' },
+              { emoji: '🧈', label: 'Butter (milk)', note: '', tint: 'bg-brand-light' },
               { emoji: '🥚', label: 'Egg', note: '', tint: 'bg-brand-soft' },
               { emoji: '🌾', label: 'Wheat (gluten)', note: '', tint: 'bg-brand-accent-light' },
-              { emoji: '🥜', label: 'Tree Nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
+              { emoji: '🥜', label: 'Tree nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
             ].map((a) => (
               <span
                 key={a.label}
@@ -62,8 +64,8 @@ export function Menu() {
               </span>
             ))}
           </div>
-          <p className="mt-4 text-sm font-semibold text-brand-dark">Have an allergy or dietary concern?</p>
-          <p className="mt-1 max-w-lg text-sm text-brand-muted">
+          <p className="relative mt-4 text-sm font-semibold text-brand-dark">Have an allergy or dietary concern?</p>
+          <p className="relative mt-1 max-w-lg text-sm text-brand-muted">
             Leave us a note with your order, and we’ll do our very best to take extra care when preparing your
             cookies.
           </p>
