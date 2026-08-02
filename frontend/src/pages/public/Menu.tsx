@@ -50,7 +50,7 @@ export function Menu() {
               { emoji: '🌾', label: 'Wheat (gluten)', note: '', tint: 'bg-brand-accent-light' },
               { emoji: '🥜', label: 'Tree nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
             ].map((a) => (
-              <div key={a.label} className="flex flex-col items-center gap-1">
+              <div key={a.label} className={`flex flex-col items-center ${a.note ? 'pb-2' : ''}`}>
                 <span className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2">
                   <span
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-sm transition-transform group-hover:scale-110 ${a.tint}`}
@@ -60,7 +60,7 @@ export function Menu() {
                   {a.label}
                 </span>
                 {a.note && (
-                  <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-medium italic text-brand-faded shadow-brand-sm ring-1 ring-brand-border-soft">
+                  <span className="relative z-10 -mt-2 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium italic text-brand-faded shadow-brand-sm ring-1 ring-brand-border-soft">
                     ({a.note})
                   </span>
                 )}
