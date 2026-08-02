@@ -43,28 +43,29 @@ export function Menu() {
           <p className="relative mb-3 text-sm text-brand-muted">
             Our cookies are made with simple ingredients. Depending on the flavour, they contain:
           </p>
-          <div className="relative flex flex-wrap items-start gap-3">
+          <div className="relative flex flex-wrap items-center gap-3">
             {[
               { emoji: '🧈', label: 'Butter (milk)', note: '', tint: 'bg-brand-light' },
               { emoji: '🥚', label: 'Egg', note: '', tint: 'bg-brand-soft' },
               { emoji: '🌾', label: 'Wheat (gluten)', note: '', tint: 'bg-brand-accent-light' },
               { emoji: '🥜', label: 'Tree nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
             ].map((a) => (
-              <div key={a.label} className={`flex flex-col items-center ${a.note ? 'pb-2' : ''}`}>
-                <span className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2">
-                  <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-sm transition-transform group-hover:scale-110 ${a.tint}`}
-                  >
-                    {a.emoji}
-                  </span>
-                  {a.label}
+              <span
+                key={a.label}
+                className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2"
+              >
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-sm transition-transform group-hover:scale-110 ${a.tint}`}
+                >
+                  {a.emoji}
                 </span>
-                {a.note && (
-                  <span className="relative z-10 -mt-2 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium italic text-brand-faded shadow-brand-sm ring-1 ring-brand-border-soft">
-                    ({a.note})
-                  </span>
-                )}
-              </div>
+                <span className="flex flex-col leading-tight">
+                  <span>{a.label}</span>
+                  {a.note && (
+                    <span className="text-[10px] font-normal italic text-brand-faded">({a.note})</span>
+                  )}
+                </span>
+              </span>
             ))}
           </div>
           <p className="relative mt-4 text-sm font-semibold text-brand-dark">Have an allergy or dietary concern?</p>
