@@ -96,6 +96,22 @@ export function Finance() {
     onError: (err) => toast.error(apiErrorMessage(err, 'Could not delete entry')),
   });
 
+  // Manual reorder (up/down) — only meaningful in the default "Newest" view.
+  const [reorder, setReorder] = useState(false);
+  const rowId = (r: LedgerRow) => ({ source: r.source, id: (r.financeId ?? r.orderId) as number });
+  const swap = useMutation({
+    mutationFn: ({ a, b }: { a: LedgerRow; b: LedgerRow }) => financeApi.swapLedger(rowId(a), rowId(b)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ledger'] }),
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not move row')),
+  });
+  const move = (index: number, dir: -1 | 1) => {
+    const list = rows ?? [];
+    const other = list[index + dir];
+    if (!other || swap.isPending) return;
+    swap.mutate({ a: list[index], b: other });
+  };
+  const canReorder = reorder && sort === 'newest' && month === 'all' && type === 'all';
+
   const selectCls =
     'rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary';
 
@@ -210,7 +226,26 @@ export function Finance() {
           <option value="highest">Highest</option>
           <option value="lowest">Lowest</option>
         </select>
+        <button
+          type="button"
+          onClick={() => setReorder((v) => !v)}
+          className={`rounded-brand border px-3 py-2 text-sm font-semibold transition-colors ${
+            reorder
+              ? 'border-brand-primary bg-brand-primary text-white'
+              : 'border-brand-border text-brand-muted hover:bg-brand-soft'
+          }`}
+        >
+          {reorder ? '✓ Reordering' : '↕ Reorder'}
+        </button>
       </div>
+      {reorder && sort === 'newest' && (month !== 'all' || type !== 'all') && (
+        <p className="mb-2 text-xs text-brand-faded">
+          Set month and type to “All” to rearrange rows.
+        </p>
+      )}
+      {reorder && sort !== 'newest' && (
+        <p className="mb-2 text-xs text-brand-faded">Switch sort to “Newest” to rearrange rows.</p>
+      )}
 
       {/* Entries */}
       {isLoading ? (
@@ -230,9 +265,33 @@ export function Finance() {
               </tr>
             </thead>
             <tbody>
-              {(rows ?? []).map((r) => (
+              {(rows ?? []).map((r, i) => (
                 <tr key={r.key} className="border-t border-brand-border-soft">
-                  <td className="px-4 py-3 text-brand-faded">{formatDate(r.date)}</td>
+                  <td className="px-4 py-3 text-brand-faded">
+                    {canReorder && (
+                      <span className="mr-2 inline-flex flex-col align-middle">
+                        <button
+                          type="button"
+                          aria-label="Move up"
+                          disabled={i === 0 || swap.isPending}
+                          onClick={() => move(i, -1)}
+                          className="leading-none text-brand-muted hover:text-brand-primary disabled:opacity-30"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Move down"
+                          disabled={i === (rows?.length ?? 0) - 1 || swap.isPending}
+                          onClick={() => move(i, 1)}
+                          className="leading-none text-brand-muted hover:text-brand-primary disabled:opacity-30"
+                        >
+                          ▼
+                        </button>
+                      </span>
+                    )}
+                    {formatDate(r.date)}
+                  </td>
                   <td className="px-4 py-3 text-brand-dark">
                     {r.desc}
                     {r.source === 'order' && (

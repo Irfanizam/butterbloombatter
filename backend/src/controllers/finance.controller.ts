@@ -3,6 +3,7 @@ import { FinanceType, OrderStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError, asyncHandler } from '../lib/http';
 import { getMonthlyTotals, orderIncomeDate } from '../lib/finance-stats';
+import { nextLedgerOrder } from '../lib/ledger';
 import { parseId, parseRequiredNumber, strOrNull } from '../lib/parse';
 
 /** Converts a "YYYY-MM" string to a [gte, lt) date range, or null if malformed. */
@@ -70,6 +71,7 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
       key: `f${f.id}`,
       source: 'finance' as const,
       financeId: f.id,
+      ledgerOrder: f.ledgerOrder,
       type: f.type as 'IN' | 'OUT',
       date: f.date.toISOString(),
       createdAt: f.createdAt.toISOString(),
@@ -85,6 +87,7 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
       key: `o${o.id}`,
       source: 'order' as const,
       orderId: o.id,
+      ledgerOrder: o.ledgerOrder,
       type: 'IN' as const,
       // Booked on the delivery date (when payment is made) so it slots into the
       // ledger by that date — appearing only once delivered (see orderIncomeDate).
@@ -117,15 +120,13 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
   if (typeParam === 'IN' || typeParam === 'OUT') {
     filtered = filtered.filter((x) => x.type === typeParam);
   }
-  // Journal order: primary by transaction date; within the same date, ordered by
-  // the exact time the row was created (createdAt) — so manual entries and orders
-  // interleave chronologically instead of being grouped by type/source.
-  const cmp = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
+  // Default order is the manual ledger position (higher = top); new rows get the
+  // highest position, so they land on top until dragged. Amount sorts ignore it.
   filtered.sort((a, b) => {
-    if (sort === 'highest') return b.amount - a.amount || cmp(b.createdAt, a.createdAt);
-    if (sort === 'lowest') return a.amount - b.amount || cmp(a.createdAt, b.createdAt);
-    if (sort === 'oldest') return cmp(a.date, b.date) || cmp(a.createdAt, b.createdAt);
-    return cmp(b.date, a.date) || cmp(b.createdAt, a.createdAt); // newest
+    if (sort === 'highest') return b.amount - a.amount || b.ledgerOrder - a.ledgerOrder;
+    if (sort === 'lowest') return a.amount - b.amount || a.ledgerOrder - b.ledgerOrder;
+    if (sort === 'oldest') return a.ledgerOrder - b.ledgerOrder;
+    return b.ledgerOrder - a.ledgerOrder; // newest / manual — higher on top
   });
 
   res.json(filtered);
@@ -190,9 +191,46 @@ export const createFinance = asyncHandler(async (req: Request, res: Response) =>
       date,
       staffId: req.user.id,
       customerId: parseCustomerId(body.customerId),
+      ledgerOrder: await nextLedgerOrder(), // new entries land on top of the ledger
     },
   });
   res.status(201).json(entry);
+});
+
+// POST /api/finance/ledger/swap — swap the manual ledger position of two rows
+// (each row is { source: 'finance' | 'order', id }); used by the up/down arrows.
+export const swapLedgerOrder = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as { a?: { source?: string; id?: unknown }; b?: { source?: string; id?: unknown } };
+
+  const parseRow = (row: { source?: string; id?: unknown } | undefined) => {
+    if (!row || (row.source !== 'finance' && row.source !== 'order')) {
+      throw new AppError(400, 'Each row needs a source of "finance" or "order"');
+    }
+    const id = Number(row.id);
+    if (!Number.isInteger(id) || id <= 0) throw new AppError(400, 'Invalid row id');
+    return { source: row.source as 'finance' | 'order', id };
+  };
+
+  const a = parseRow(body.a);
+  const b = parseRow(body.b);
+
+  const positionOf = async (row: { source: 'finance' | 'order'; id: number }) => {
+    const rec =
+      row.source === 'finance'
+        ? await prisma.finance.findUnique({ where: { id: row.id }, select: { ledgerOrder: true } })
+        : await prisma.order.findUnique({ where: { id: row.id }, select: { ledgerOrder: true } });
+    if (!rec) throw new AppError(404, 'Ledger row not found');
+    return rec.ledgerOrder;
+  };
+
+  const setPosition = (row: { source: 'finance' | 'order'; id: number }, ledgerOrder: number) =>
+    row.source === 'finance'
+      ? prisma.finance.update({ where: { id: row.id }, data: { ledgerOrder } })
+      : prisma.order.update({ where: { id: row.id }, data: { ledgerOrder } });
+
+  const [posA, posB] = await Promise.all([positionOf(a), positionOf(b)]);
+  await prisma.$transaction([setPosition(a, posB), setPosition(b, posA)]);
+  res.json({ ok: true });
 });
 
 // PUT /api/finance/:id
