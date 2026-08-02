@@ -36,23 +36,17 @@ export function Menu() {
 
       {/* Allergen info — cute recipe-note sticker */}
       <div className="relative mb-8 mt-3">
-        {/* peeking sticker badge */}
-        <div className="absolute -top-3 left-6 z-10 -rotate-6 rounded-full bg-white px-3 py-1 text-xs font-bold text-brand-dark shadow-brand-sm ring-2 ring-brand-accent-light">
-          🍪 good to know!
-        </div>
-        <div className="relative overflow-hidden rounded-brand-lg border-2 border-dashed border-brand-primary/30 bg-gradient-to-br from-brand-accent-light/60 via-brand-soft to-white p-5 pt-8 shadow-brand-sm">
-          {/* playful background bake */}
-          <span className="pointer-events-none absolute -right-2 top-4 select-none text-6xl opacity-10">🧁</span>
-          <p className="relative mb-3 max-w-lg text-sm text-brand-muted">
-            Everything’s baked with love in a little home kitchen — so our cookies might hold hands with a
-            few of these:
+        <div className="relative overflow-hidden rounded-brand-lg border-2 border-dashed border-brand-primary/30 bg-gradient-to-br from-brand-accent-light/60 via-brand-soft to-white p-5 shadow-brand-sm">
+          <h2 className="mb-1 text-base font-bold text-brand-dark">🍪 A little note before you order</h2>
+          <p className="mb-3 max-w-lg text-sm text-brand-muted">
+            Our cookies are made with simple ingredients. Depending on the flavour, they contain:
           </p>
-          <div className="relative flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             {[
-              { emoji: '🌾', label: 'Wheat / Gluten', tint: 'bg-brand-accent-light' },
-              { emoji: '🧈', label: 'Butter / Dairy', tint: 'bg-brand-light' },
-              { emoji: '🥚', label: 'Egg', tint: 'bg-brand-soft' },
-              { emoji: '🥜', label: 'Nuts', tint: 'bg-brand-green-light' },
+              { emoji: '🧈', label: 'Dairy (including butter)', note: '', tint: 'bg-brand-light' },
+              { emoji: '🥚', label: 'Egg', note: '', tint: 'bg-brand-soft' },
+              { emoji: '🌾', label: 'Wheat (gluten)', note: '', tint: 'bg-brand-accent-light' },
+              { emoji: '🥜', label: 'Tree Nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
             ].map((a) => (
               <span
                 key={a.label}
@@ -64,12 +58,14 @@ export function Menu() {
                   {a.emoji}
                 </span>
                 {a.label}
+                {a.note && <span className="font-normal italic text-brand-faded">&nbsp;({a.note})</span>}
               </span>
             ))}
           </div>
-          <p className="relative mt-4 flex items-center gap-1.5 text-xs text-brand-faded">
-            <span className="text-sm">💛</span> Got an allergy? Pop it in your order note and we’ll take extra
-            care of you.
+          <p className="mt-4 text-sm font-semibold text-brand-dark">Have an allergy or dietary concern?</p>
+          <p className="mt-1 max-w-lg text-sm text-brand-muted">
+            Leave us a note with your order, and we’ll do our very best to take extra care when preparing your
+            cookies.
           </p>
         </div>
       </div>
