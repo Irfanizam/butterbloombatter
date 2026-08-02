@@ -3,6 +3,7 @@ import { OrderStatus, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError, asyncHandler } from '../lib/http';
 import { parseId, parseRequiredNumber, strOrNull } from '../lib/parse';
+import { nextLedgerOrder } from '../lib/ledger';
 import { CreateOrderBody } from '../types';
 
 type TxClient = Prisma.TransactionClient;
@@ -138,6 +139,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
         tag: strOrNull(body.tag),
         deliveryDate,
         ...(placedDate ? { createdAt: placedDate } : {}),
+        ledgerOrder: await nextLedgerOrder(tx), // new orders land on top of the ledger
         orderItems: { create: lineItems },
       },
       include: { orderItems: { include: { product: true } }, customer: true },

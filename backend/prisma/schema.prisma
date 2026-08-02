@@ -85,6 +85,7 @@ model Order {
   tag          String? // e.g. "Cookie Sales" | "Custom Orders"
   deliveryDate DateTime?
   completedAt  DateTime? // set when status becomes DELIVERED (used for receipts)
+  ledgerOrder  Int         @default(0) // manual position in the finance ledger (higher = nearer the top)
   orderItems   OrderItem[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -116,12 +117,13 @@ model Finance {
   desc       String
   category   String
   note       String?
-  date       DateTime
-  staffId    Int
-  staff      User        @relation(fields: [staffId], references: [id])
-  customerId Int? // optional link to a customer
-  customer   Customer?   @relation(fields: [customerId], references: [id])
-  createdAt  DateTime    @default(now())
+  date        DateTime
+  staffId     Int
+  staff       User        @relation(fields: [staffId], references: [id])
+  customerId  Int? // optional link to a customer
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  ledgerOrder Int         @default(0) // manual position in the finance ledger (higher = nearer the top)
+  createdAt   DateTime    @default(now())
 }
 
 enum FinanceType {

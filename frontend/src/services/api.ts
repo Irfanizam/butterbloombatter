@@ -166,6 +166,8 @@ export const financeApi = {
     api.get('/api/finance', { params }).then((r) => r.data as Finance[]),
   ledger: (params: FinanceListParams = {}) =>
     api.get('/api/finance/ledger', { params }).then((r) => r.data as LedgerRow[]),
+  swapLedger: (a: { source: string; id: number }, b: { source: string; id: number }) =>
+    api.post('/api/finance/ledger/swap', { a, b }).then((r) => r.data as { ok: boolean }),
   summary: () => api.get('/api/finance/summary').then((r) => r.data as MonthlyTotal[]),
   create: (data: Partial<Finance>) => api.post('/api/finance', data).then((r) => r.data as Finance),
   update: (id: number, data: Partial<Finance>) =>

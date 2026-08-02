@@ -5,6 +5,7 @@ import {
   financeSummary,
   getLedger,
   listFinance,
+  swapLedgerOrder,
   updateFinance,
 } from '../controllers/finance.controller';
 import { authenticate } from '../middleware/auth.middleware';
@@ -13,6 +14,7 @@ const router = Router();
 
 router.get('/summary', authenticate, financeSummary); // before any param routes
 router.get('/ledger', authenticate, getLedger);
+router.post('/ledger/swap', authenticate, swapLedgerOrder);
 router.get('/', authenticate, listFinance);
 router.post('/', authenticate, createFinance);
 router.put('/:id', authenticate, updateFinance);

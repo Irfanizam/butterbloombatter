@@ -96,6 +96,7 @@ export interface LedgerRow {
   source: 'finance' | 'order';
   financeId?: number;
   orderId?: number;
+  ledgerOrder: number;
   type: FinanceType;
   date: string;
   createdAt: string;
