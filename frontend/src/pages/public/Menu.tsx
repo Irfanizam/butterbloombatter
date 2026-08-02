@@ -40,32 +40,35 @@ export function Menu() {
           {/* playful background cookie */}
           <span className="pointer-events-none absolute -right-2 top-3 select-none text-6xl opacity-10">🍪</span>
           <h2 className="relative mb-1 text-base font-bold text-brand-dark">📝 A little note before you order</h2>
-          <p className="relative mb-3 max-w-lg text-sm text-brand-muted">
+          <p className="relative mb-3 text-sm text-brand-muted">
             Our cookies are made with simple ingredients. Depending on the flavour, they contain:
           </p>
-          <div className="relative flex flex-wrap gap-3">
+          <div className="relative flex flex-wrap items-start gap-3">
             {[
               { emoji: '🧈', label: 'Butter (milk)', note: '', tint: 'bg-brand-light' },
               { emoji: '🥚', label: 'Egg', note: '', tint: 'bg-brand-soft' },
               { emoji: '🌾', label: 'Wheat (gluten)', note: '', tint: 'bg-brand-accent-light' },
               { emoji: '🥜', label: 'Tree nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
             ].map((a) => (
-              <span
-                key={a.label}
-                className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2"
-              >
-                <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-sm transition-transform group-hover:scale-110 ${a.tint}`}
-                >
-                  {a.emoji}
+              <div key={a.label} className="flex flex-col items-center gap-1">
+                <span className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2">
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-sm transition-transform group-hover:scale-110 ${a.tint}`}
+                  >
+                    {a.emoji}
+                  </span>
+                  {a.label}
                 </span>
-                {a.label}
-                {a.note && <span className="font-normal italic text-brand-faded">&nbsp;({a.note})</span>}
-              </span>
+                {a.note && (
+                  <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-medium italic text-brand-faded shadow-brand-sm ring-1 ring-brand-border-soft">
+                    {a.note}
+                  </span>
+                )}
+              </div>
             ))}
           </div>
           <p className="relative mt-4 text-sm font-semibold text-brand-dark">Have an allergy or dietary concern?</p>
-          <p className="relative mt-1 max-w-lg text-sm text-brand-muted">
+          <p className="relative mt-1 text-sm text-brand-muted">
             Leave us a note with your order, and we’ll do our very best to take extra care when preparing your
             cookies.
           </p>
