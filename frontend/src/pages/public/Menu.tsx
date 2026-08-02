@@ -61,7 +61,7 @@ export function Menu() {
                 </span>
                 {a.note && (
                   <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-medium italic text-brand-faded shadow-brand-sm ring-1 ring-brand-border-soft">
-                    {a.note}
+                    ({a.note})
                   </span>
                 )}
               </div>
