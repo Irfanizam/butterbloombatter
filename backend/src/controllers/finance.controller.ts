@@ -89,7 +89,10 @@ export const getLedger = asyncHandler(async (req: Request, res: Response) => {
       // Booked on the delivery date (when payment is made) so it slots into the
       // ledger by that date — appearing only once delivered (see orderIncomeDate).
       date: orderIncomeDate(o).toISOString(),
-      createdAt: o.createdAt.toISOString(),
+      // For same-date ordering use the REAL record time (updatedAt), not the
+      // back-dated placed date (o.createdAt) — otherwise every order sinks below
+      // manually-added entries, which carry their real insertion time.
+      createdAt: o.updatedAt.toISOString(),
       category: o.tag || 'Cookie Sales',
       desc: `Order ${o.orderNumber}`,
       subtitle: o.orderItems
