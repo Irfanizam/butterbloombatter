@@ -202,7 +202,7 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
               required
             />
           </Field>
-          <Field label="Pieces per box">
+          <Field label="Pieces per jar">
             <input
               className={inputCls}
               type="number"
