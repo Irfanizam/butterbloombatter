@@ -30,9 +30,7 @@ export function Orders() {
   const orders = data?.orders ?? [];
 
   const [tab, setTab] = useState<'ALL' | OrderStatus>('ALL');
-  const [sort, setSort] = useState<'number-asc' | 'number-desc' | 'newest' | 'oldest' | 'total-desc' | 'total-asc'>(
-    'number-asc'
-  );
+  const [sort, setSort] = useState<'number-desc' | 'number-asc'>('number-desc');
   const [createOpen, setCreateOpen] = useState(false);
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
@@ -46,11 +44,7 @@ export function Orders() {
   const filtered = useMemo(() => {
     const list = (tab === 'ALL' ? orders : orders.filter((o) => o.status === tab)).slice();
     if (sort === 'number-asc') list.sort((a, b) => a.orderNumber.localeCompare(b.orderNumber, undefined, { numeric: true }));
-    else if (sort === 'number-desc') list.sort((a, b) => b.orderNumber.localeCompare(a.orderNumber, undefined, { numeric: true }));
-    else if (sort === 'oldest') list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    else if (sort === 'total-desc') list.sort((a, b) => b.totalAmount - a.totalAmount);
-    else if (sort === 'total-asc') list.sort((a, b) => a.totalAmount - b.totalAmount);
-    else list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    else list.sort((a, b) => b.orderNumber.localeCompare(a.orderNumber, undefined, { numeric: true }));
     return list;
   }, [orders, tab, sort]);
 
@@ -85,12 +79,8 @@ export function Orders() {
           onChange={(e) => setSort(e.target.value as typeof sort)}
           className="rounded-brand border border-brand-border px-3 py-2 text-sm outline-none focus:border-brand-primary"
         >
-          <option value="number-asc">Sort: Order # 1→N</option>
           <option value="number-desc">Sort: Order # N→1</option>
-          <option value="newest">Sort: Newest</option>
-          <option value="oldest">Sort: Oldest</option>
-          <option value="total-desc">Sort: Total ↓</option>
-          <option value="total-asc">Sort: Total ↑</option>
+          <option value="number-asc">Sort: Order # 1→N</option>
         </select>
       </div>
 
