@@ -1,5 +1,5 @@
 import { formatRM } from '../../lib/format';
-import { CookiePlaceholder } from '../ui/CookiePlaceholder';
+import { ImageCarousel } from '../ui/ImageCarousel';
 import type { Product } from '../../types';
 
 interface Props {
@@ -9,6 +9,10 @@ interface Props {
 }
 
 export function StoreProductCard({ product, onAdd, onOpen }: Props) {
+  const cardImages = [
+    ...(product.imageUrl ? [product.imageUrl] : []),
+    ...(product.images?.map((i) => i.url) ?? []),
+  ];
   return (
     <div className="group flex flex-col overflow-hidden rounded-brand-lg border border-brand-border-soft bg-white shadow-brand-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-brand-lg">
       <button
@@ -16,15 +20,15 @@ export function StoreProductCard({ product, onAdd, onOpen }: Props) {
         onClick={() => onOpen?.(product)}
         className="relative block h-44 w-full overflow-hidden bg-brand-soft text-left"
       >
-        {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <CookiePlaceholder className="h-full w-full" />
-        )}
+        {/* Auto-sliding photos (no controls — the whole card opens the detail view) */}
+        <ImageCarousel
+          images={cardImages}
+          fit="cover"
+          controls={false}
+          intervalMs={3000}
+          className="h-full w-full"
+          alt={product.name}
+        />
         {product.isFeatured && (
           <span className="absolute left-3 top-3 rounded-full bg-brand-accent-light px-2.5 py-0.5 text-xs font-bold text-brand-gold shadow-brand-sm">
             ⭐ Featured
