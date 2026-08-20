@@ -18,7 +18,7 @@ export function StoreProductCard({ product, onAdd, onOpen }: Props) {
       <button
         type="button"
         onClick={() => onOpen?.(product)}
-        className="relative block h-44 w-full overflow-hidden bg-brand-soft text-left"
+        className="relative block aspect-[27/16] w-full overflow-hidden bg-brand-soft text-left"
       >
         {/* Auto-sliding photos (no controls — the whole card opens the detail view) */}
         <ImageCarousel

@@ -51,8 +51,9 @@ export function ProductDetailModal({ productId, onClose, onAddToInquiry }: Props
         </div>
       ) : (
         <div>
-          {/* Carousel — a natural 4:3 photo frame filled edge-to-edge (no letterbox gaps) */}
-          <ImageCarousel images={gallery} fit="cover" className="aspect-[4/3] rounded-brand-lg" alt={product.name} />
+          {/* Carousel — frame matches the photos' 27:16 ratio, so the whole image
+              shows with no zoom/crop and no letterbox gaps. */}
+          <ImageCarousel images={gallery} fit="contain" className="aspect-[27/16] rounded-brand-lg" alt={product.name} />
 
           {/* Details */}
           <div className="mt-4">
