@@ -30,18 +30,13 @@ export function StoreProductCard({ product, onAdd, onOpen }: Props) {
           alt={product.name}
         />
         {product.isFeatured && (
-          <span className="absolute left-3 top-3 rounded-full bg-brand-accent-light px-2.5 py-0.5 text-xs font-bold text-brand-gold shadow-brand-sm">
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-brand-accent-light px-2.5 py-0.5 text-xs font-bold text-brand-gold shadow-brand-sm">
             ⭐ Featured
           </span>
         )}
         {product.pieces != null && (
-          <span className="absolute bottom-2 left-3 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-bold text-brand-dark shadow-brand-sm">
+          <span className="absolute bottom-2 left-3 z-10 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-bold text-brand-dark shadow-brand-sm">
             🍪 {product.pieces} pcs
-          </span>
-        )}
-        {onOpen && (product.images?.length ?? 0) > 0 && (
-          <span className="absolute bottom-2 right-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
-            📷 more
           </span>
         )}
       </button>

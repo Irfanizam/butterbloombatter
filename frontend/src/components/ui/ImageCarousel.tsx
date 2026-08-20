@@ -23,14 +23,19 @@ export function ImageCarousel({
   alt = '',
 }: Props) {
   const count = images.length;
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const safe = count ? ((index % count) + count) % count : 0;
   const fitCls = fit === 'contain' ? 'object-contain' : 'object-cover';
 
-  // Reset when the set of images changes (content-based, not identity).
+  // Slides are cloned on both ends ([last, ...images, first]) so the track can
+  // slide past the edge and then snap back invisibly — a seamless loop.
+  const [pos, setPos] = useState(1); // 1 = first real image
+  const [animate, setAnimate] = useState(true);
+  const [paused, setPaused] = useState(false);
+
   const key = images.join('|');
-  useEffect(() => setIndex(0), [key]);
+  useEffect(() => {
+    setPos(1);
+    setAnimate(true);
+  }, [key]);
 
   // Autoplay (paused on hover / touch).
   const pausedRef = useRef(paused);
@@ -38,10 +43,46 @@ export function ImageCarousel({
   useEffect(() => {
     if (count <= 1 || !intervalMs) return;
     const id = setInterval(() => {
-      if (!pausedRef.current) setIndex((i) => i + 1);
+      if (!pausedRef.current) setPos((p) => p + 1);
     }, intervalMs);
     return () => clearInterval(id);
   }, [count, intervalMs, key]);
+
+  // Re-enable the transition on the frame after a no-animation snap.
+  useEffect(() => {
+    if (!animate) {
+      const id = requestAnimationFrame(() => setAnimate(true));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [animate]);
+
+  if (count === 0) {
+    return (
+      <div className={`relative overflow-hidden bg-brand-soft ${className}`}>
+        <CookiePlaceholder className="h-full w-full" />
+      </div>
+    );
+  }
+  if (count === 1) {
+    return (
+      <div className={`relative overflow-hidden bg-brand-soft ${className}`}>
+        <img src={images[0]} alt={alt} className={`h-full w-full ${fitCls}`} />
+      </div>
+    );
+  }
+
+  const slides = [images[count - 1], ...images, images[0]];
+  const logical = ((pos - 1) % count + count) % count; // real index, for the dots
+
+  const onDone = () => {
+    if (pos === slides.length - 1) {
+      setAnimate(false); // reached the trailing clone → snap to the real first
+      setPos(1);
+    } else if (pos === 0) {
+      setAnimate(false); // reached the leading clone → snap to the real last
+      setPos(count);
+    }
+  };
 
   return (
     <div
@@ -50,27 +91,24 @@ export function ImageCarousel({
       onMouseLeave={() => setPaused(false)}
       onTouchStart={() => setPaused(true)}
     >
-      {count === 0 ? (
-        <CookiePlaceholder className="h-full w-full" />
-      ) : (
-        // Crossfade: all images stacked, only the current one visible.
-        images.map((src, i) => (
-          <img
-            key={i}
-            src={src}
-            alt={alt}
-            className={`absolute inset-0 h-full w-full ${fitCls} transition-opacity duration-700 ease-in-out ${
-              i === safe ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-        ))
-      )}
+      <div
+        className="flex h-full w-full"
+        style={{
+          transform: `translateX(-${pos * 100}%)`,
+          transition: animate ? 'transform 0.6s ease-in-out' : 'none',
+        }}
+        onTransitionEnd={onDone}
+      >
+        {slides.map((src, i) => (
+          <img key={i} src={src} alt={alt} className={`h-full w-full shrink-0 ${fitCls}`} />
+        ))}
+      </div>
 
-      {controls && count > 1 && (
+      {controls && (
         <>
           <button
             type="button"
-            onClick={() => setIndex((i) => i - 1)}
+            onClick={() => setPos((p) => p - 1)}
             aria-label="Previous image"
             className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 px-3 py-1 text-lg leading-none text-brand-dark shadow-brand-sm hover:bg-white"
           >
@@ -78,7 +116,7 @@ export function ImageCarousel({
           </button>
           <button
             type="button"
-            onClick={() => setIndex((i) => i + 1)}
+            onClick={() => setPos((p) => p + 1)}
             aria-label="Next image"
             className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 px-3 py-1 text-lg leading-none text-brand-dark shadow-brand-sm hover:bg-white"
           >
@@ -89,10 +127,10 @@ export function ImageCarousel({
               <button
                 key={i}
                 type="button"
-                onClick={() => setIndex(i)}
+                onClick={() => setPos(i + 1)}
                 aria-label={`Go to image ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === safe ? 'w-4 bg-white' : 'w-1.5 bg-white/60 hover:bg-white/90'
+                  i === logical ? 'w-4 bg-white' : 'w-1.5 bg-white/60 hover:bg-white/90'
                 }`}
               />
             ))}
