@@ -52,7 +52,7 @@ export function ProductDetailModal({ productId, onClose, onAddToInquiry }: Props
       ) : (
         <div>
           {/* Carousel — 'contain' shows the whole cookie (no zoom/crop on mobile) */}
-          <ImageCarousel images={gallery} fit="contain" className="h-80" alt={product.name} />
+          <ImageCarousel images={gallery} fit="contain" className="h-80 rounded-brand-lg" alt={product.name} />
 
           {/* Details */}
           <div className="mt-4">
