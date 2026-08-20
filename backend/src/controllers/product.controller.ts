@@ -23,7 +23,7 @@ async function ensureCategoryExists(categoryId: number): Promise<void> {
 export const listPublicProducts = asyncHandler(async (_req: Request, res: Response) => {
   const products = await prisma.product.findMany({
     where: { isAvailable: true },
-    include: { category: true },
+    include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(products);

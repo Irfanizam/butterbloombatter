@@ -30,3 +30,12 @@ h4 {
   font-family: 'Fraunces', Georgia, serif;
   letter-spacing: -0.01em;
 }
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
