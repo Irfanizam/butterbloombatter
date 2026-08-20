@@ -7,6 +7,7 @@ import { StoreProductCard } from '../../components/public/StoreProductCard';
 import { Spinner } from '../../components/ui/Spinner';
 import { StarRating } from '../../components/ui/StarRating';
 import { Modal } from '../../components/ui/Modal';
+import { ImageCarousel } from '../../components/ui/ImageCarousel';
 
 const HIGHLIGHTS = [
   {
@@ -32,6 +33,11 @@ export function Home() {
     queryFn: productsApi.listPublic,
   });
   const featured = (products ?? []).filter((p) => p.isFeatured);
+  // Every product photo (main + gallery) for the homepage carousel.
+  const galleryImages = (products ?? []).flatMap((p) => [
+    ...(p.imageUrl ? [p.imageUrl] : []),
+    ...(p.images?.map((i) => i.url) ?? []),
+  ]);
   const { data: reviews = [] } = useQuery({ queryKey: ['reviews'], queryFn: reviewsApi.listPublic });
   const [faqOpen, setFaqOpen] = useState(false);
 
@@ -89,6 +95,23 @@ export function Home() {
           ))}
         </div>
       </section>
+
+      {/* Gallery carousel */}
+      {galleryImages.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 pt-14">
+          <div className="mb-6 text-center">
+            <h2 className="text-3xl font-bold text-brand-dark">Fresh from the oven</h2>
+            <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-brand-primary" />
+          </div>
+          <ImageCarousel
+            images={galleryImages}
+            fit="cover"
+            intervalMs={4000}
+            className="h-64 shadow-brand sm:h-80 lg:h-[26rem]"
+            alt="Our cookies"
+          />
+        </section>
+      )}
 
       {/* Featured */}
       <section className="mx-auto max-w-6xl px-4 py-16">
