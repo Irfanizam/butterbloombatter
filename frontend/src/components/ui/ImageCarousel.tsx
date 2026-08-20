@@ -29,7 +29,8 @@ export function ImageCarousel({
   // slide past the edge and then snap back invisibly — a seamless loop.
   const [pos, setPos] = useState(1); // 1 = first real image
   const [animate, setAnimate] = useState(true);
-  const [paused, setPaused] = useState(false);
+  // Autoplay runs only while the user is interacting (hovering / holding).
+  const [active, setActive] = useState(false);
 
   const key = images.join('|');
   useEffect(() => {
@@ -37,13 +38,13 @@ export function ImageCarousel({
     setAnimate(true);
   }, [key]);
 
-  // Autoplay (paused on hover / touch).
-  const pausedRef = useRef(paused);
-  pausedRef.current = paused;
+  // Advance only while active (cursor over it on desktop, finger on it on phone).
+  const activeRef = useRef(active);
+  activeRef.current = active;
   useEffect(() => {
     if (count <= 1 || !intervalMs) return;
     const id = setInterval(() => {
-      if (!pausedRef.current) setPos((p) => p + 1);
+      if (activeRef.current) setPos((p) => p + 1);
     }, intervalMs);
     return () => clearInterval(id);
   }, [count, intervalMs, key]);
@@ -87,9 +88,11 @@ export function ImageCarousel({
   return (
     <div
       className={`relative overflow-hidden bg-brand-soft ${className}`}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
+      onMouseEnter={() => setActive(true)}
+      onMouseLeave={() => setActive(false)}
+      onTouchStart={() => setActive(true)}
+      onTouchEnd={() => setActive(false)}
+      onTouchCancel={() => setActive(false)}
     >
       <div
         className="flex h-full w-full"
