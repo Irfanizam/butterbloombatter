@@ -1,5 +1,6 @@
 import { formatRM } from '../../lib/format';
 import { ImageCarousel } from '../ui/ImageCarousel';
+import { AllergenIcons } from './AllergenIcons';
 import type { Product } from '../../types';
 
 interface Props {
@@ -39,6 +40,10 @@ export function StoreProductCard({ product, onAdd, onOpen }: Props) {
             🍪 {product.pieces} pcs
           </span>
         )}
+        <AllergenIcons
+          keys={product.allergens}
+          className="absolute bottom-2 right-3 z-10 rounded-full bg-white/90 px-2 py-0.5 shadow-brand-sm"
+        />
       </button>
       <div className="flex flex-1 flex-col gap-1 p-4">
         <button type="button" onClick={() => onOpen?.(product)} className="text-left">

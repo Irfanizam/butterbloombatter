@@ -5,6 +5,7 @@ import { StoreProductCard } from '../../components/public/StoreProductCard';
 import { ProductDetailModal } from '../../components/public/ProductDetailModal';
 import { InquiryForm } from '../../components/public/InquiryForm';
 import { Spinner } from '../../components/ui/Spinner';
+import { ALLERGENS } from '../../lib/allergens';
 import type { Product } from '../../types';
 
 export function Menu() {
@@ -41,15 +42,11 @@ export function Menu() {
           <span className="pointer-events-none absolute -right-2 top-3 select-none text-6xl opacity-10">🍪</span>
           <h2 className="relative mb-1 text-base font-bold text-brand-dark">📝 A little note before you order</h2>
           <p className="relative mb-3 text-sm text-brand-muted">
-            Our cookies are made with simple ingredients. Depending on the flavour, they contain:
+            Our cookies are made with simple ingredients. Depending on the flavour, they contain the following —
+            look for these icons on each cookie to see what it has:
           </p>
           <div className="relative flex flex-wrap items-center gap-3">
-            {[
-              { emoji: '🧈', label: 'Butter (milk)', note: '', tint: 'bg-brand-light' },
-              { emoji: '🥚', label: 'Egg', note: '', tint: 'bg-brand-soft' },
-              { emoji: '🌾', label: 'Wheat (gluten)', note: '', tint: 'bg-brand-accent-light' },
-              { emoji: '🥜', label: 'Tree nuts', note: 'selected flavours only', tint: 'bg-brand-green-light' },
-            ].map((a) => (
+            {ALLERGENS.map((a) => ({ ...a, note: a.key === 'tree_nuts' ? 'selected flavours only' : '' })).map((a) => (
               <span
                 key={a.label}
                 className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2"
