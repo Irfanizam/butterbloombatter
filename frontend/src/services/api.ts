@@ -181,6 +181,8 @@ export const reviewsApi = {
   create: (data: Partial<Review>) => api.post('/api/reviews', data).then((r) => r.data as Review),
   update: (id: number, data: Partial<Review>) =>
     api.put(`/api/reviews/${id}`, data).then((r) => r.data as Review),
+  reorder: (ids: number[]) =>
+    api.patch('/api/reviews/reorder', { ids }).then((r) => r.data as Review[]),
   remove: (id: number) => api.delete(`/api/reviews/${id}`),
 };
 

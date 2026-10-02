@@ -38,6 +38,7 @@ export interface Product {
   description: string | null;
   price: number;
   pieces: number | null;
+  allergens: string[]; // keys from lib/allergens.ts
   imageUrl: string | null;
   imagePublicId: string | null;
   isAvailable: boolean;

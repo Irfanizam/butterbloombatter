@@ -5,6 +5,7 @@ import { useToast } from '../../hooks/useToast';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Toggle } from '../ui/Toggle';
+import { ALLERGENS } from '../../lib/allergens';
 import type { Category, Product } from '../../types';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -28,6 +29,7 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [pieces, setPieces] = useState('');
+  const [allergens, setAllergens] = useState<string[]>([]);
   const [isAvailable, setIsAvailable] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -74,6 +76,7 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
     setDescription(product?.description ?? '');
     setPrice(product ? String(product.price) : '');
     setPieces(product?.pieces != null ? String(product.pieces) : '');
+    setAllergens(product?.allergens ?? []);
     setIsAvailable(product?.isAvailable ?? true);
     setIsFeatured(product?.isFeatured ?? false);
     setImageFile(null);
@@ -109,6 +112,7 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
       fd.append('description', description);
       fd.append('price', price);
       fd.append('pieces', pieces);
+      fd.append('allergens', JSON.stringify(allergens));
       fd.append('isAvailable', String(isAvailable));
       fd.append('isFeatured', String(isFeatured));
       if (imageFile) fd.append('image', imageFile);
@@ -212,6 +216,34 @@ export function ProductFormModal({ open, onClose, product, categories, onCreated
               placeholder="e.g. 30"
             />
           </Field>
+        </div>
+
+        <div role="group" aria-label="Contains (allergens)">
+          <span className="mb-1 block text-sm font-semibold text-brand-dark">Contains (allergens)</span>
+          <div className="flex flex-wrap gap-2">
+            {ALLERGENS.map((a) => {
+              const checked = allergens.includes(a.key);
+              return (
+                <button
+                  key={a.key}
+                  type="button"
+                  aria-pressed={checked}
+                  onClick={() =>
+                    setAllergens((list) => (checked ? list.filter((k) => k !== a.key) : [...list, a.key]))
+                  }
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                    checked
+                      ? 'border-brand-primary bg-brand-light text-brand-dark'
+                      : 'border-brand-border bg-white text-brand-faded hover:border-brand-primary'
+                  }`}
+                >
+                  <span>{a.emoji}</span>
+                  {a.label}
+                  {checked && <span className="text-brand-primary">✓</span>}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex items-center justify-between rounded-brand bg-brand-soft px-3 py-2">

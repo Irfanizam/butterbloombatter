@@ -34,10 +34,13 @@ export const createReview = asyncHandler(async (req: Request, res: Response) => 
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!author) throw new AppError(400, 'Author is required');
   if (!message) throw new AppError(400, 'Message is required');
+  // New reviews go to the top of the manual order.
+  const first = await prisma.review.findFirst({ orderBy: { sortOrder: 'asc' }, select: { sortOrder: true } });
   const review = await prisma.review.create({
     data: {
       author,
       message,
+      sortOrder: (first?.sortOrder ?? 1) - 1,
       rating: body.rating !== undefined ? parseRating(body.rating) : 5,
       isPublished: body.isPublished === undefined ? true : Boolean(body.isPublished),
     },
@@ -56,6 +59,20 @@ export const updateReview = asyncHandler(async (req: Request, res: Response) => 
   if (body.isPublished !== undefined) data.isPublished = Boolean(body.isPublished);
   const review = await prisma.review.update({ where: { id }, data });
   res.json(review);
+});
+
+// PATCH /api/reviews/reorder  (ADMIN) — sets sortOrder from the given id order
+export const reorderReviews = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as { ids?: unknown };
+  const ids = Array.isArray(body.ids) ? body.ids.map((id) => parseId(id)) : [];
+  if (ids.length === 0) throw new AppError(400, 'ids array is required');
+  await prisma.$transaction(
+    ids.map((id, index) => prisma.review.update({ where: { id }, data: { sortOrder: index } }))
+  );
+  const reviews = await prisma.review.findMany({
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+  });
+  res.json(reviews);
 });
 
 // DELETE /api/reviews/:id  (ADMIN)
