@@ -37,6 +37,7 @@ model Product {
   description   String?
   price         Float
   pieces        Int? // cookies per box/order (shown on the storefront)
+  allergens     String[]    @default([]) // keys from src/lib/allergens.ts
   imageUrl      String? // Cloudinary URL
   imagePublicId String? // Cloudinary public_id (for deletion)
   isAvailable   Boolean        @default(true)

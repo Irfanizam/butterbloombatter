@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError, asyncHandler } from '../lib/http';
 import { parseBool, parseId, parseRequiredNumber } from '../lib/parse';
+import { parseAllergens } from '../lib/allergens';
 import { deleteImage, uploadImage } from '../services/cloudinary.service';
 
 async function removeTempFile(filePath: string): Promise<void> {
@@ -107,6 +108,7 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
   const price = parseRequiredNumber(body.price, 'Price');
   const categoryId = parseRequiredNumber(body.categoryId, 'Category');
   await ensureCategoryExists(categoryId);
+  const allergens = parseAllergens(body.allergens);
 
   let imageUrl: string | null = null;
   let imagePublicId: string | null = null;
@@ -123,6 +125,7 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
       description: typeof body.description === 'string' ? body.description : null,
       price,
       pieces: body.pieces !== undefined && body.pieces !== '' ? parseRequiredNumber(body.pieces, 'Pieces') : null,
+      allergens,
       isAvailable: parseBool(body.isAvailable, true),
       isFeatured: parseBool(body.isFeatured, false),
       categoryId,
@@ -152,6 +155,7 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
   if (body.pieces !== undefined) {
     data.pieces = body.pieces === '' || body.pieces === null ? null : parseRequiredNumber(body.pieces, 'Pieces');
   }
+  if (body.allergens !== undefined) data.allergens = parseAllergens(body.allergens);
   if (body.isAvailable !== undefined) data.isAvailable = parseBool(body.isAvailable, existing.isAvailable);
   if (body.isFeatured !== undefined) data.isFeatured = parseBool(body.isFeatured, existing.isFeatured);
   if (body.categoryId !== undefined) {
