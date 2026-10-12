@@ -42,8 +42,8 @@ export function Menu() {
           <span className="pointer-events-none absolute -right-2 top-3 select-none text-6xl opacity-10">🍪</span>
           <h2 className="relative mb-1 text-base font-bold text-brand-dark">📝 A little note before you order</h2>
           <p className="relative mb-3 text-sm text-brand-muted">
-            Our cookies are made with simple ingredients. Depending on the flavour, they contain the following —
-            look for these icons on each cookie to see what it has:
+            Our cookies are made with simple ingredients. Each flavour has its own mix — look out for these icons to
+            see what’s in your cookies:
           </p>
           <div className="relative flex flex-wrap items-center gap-3">
             {ALLERGENS.map((a) => ({ ...a, note: a.key === 'tree_nuts' ? 'selected flavours only' : '' })).map((a) => (
