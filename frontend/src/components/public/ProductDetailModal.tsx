@@ -79,14 +79,21 @@ export function ProductDetailModal({ productId, onClose, onAddToInquiry }: Props
             )}
             {productAllergens(product.allergens).length > 0 && (
               <div className="mt-4">
-                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-faded">Contains</p>
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-faded">
+                  Contains (allergens)
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {productAllergens(product.allergens).map((a) => (
                     <span
                       key={a.key}
-                      className="flex items-center gap-1.5 rounded-full border border-brand-border-soft bg-white px-2.5 py-1 text-xs font-semibold text-brand-dark"
+                      className="flex items-center gap-2 rounded-full border border-brand-border-soft bg-white py-1 pl-1 pr-3 text-xs font-semibold text-brand-dark shadow-brand-sm"
                     >
-                      <span aria-hidden="true">{a.emoji}</span>
+                      <span
+                        aria-hidden="true"
+                        className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${a.tint}`}
+                      >
+                        {a.emoji}
+                      </span>
                       {a.label}
                     </span>
                   ))}
