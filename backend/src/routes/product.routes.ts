@@ -7,6 +7,7 @@ import {
   getProduct,
   listAdminProducts,
   listPublicProducts,
+  reorderProducts,
   toggleFeatured,
   updateProduct,
 } from '../controllers/product.controller';
@@ -24,6 +25,7 @@ router.post('/', authenticate, requireAdmin, uploadSingleImage, createProduct);
 router.put('/:id', authenticate, requireAdmin, uploadSingleImage, updateProduct);
 router.delete('/:id', authenticate, requireAdmin, deleteProduct);
 
+router.patch('/reorder', authenticate, requireAdmin, reorderProducts); // menu order
 router.patch('/:id/featured', authenticate, toggleFeatured);
 
 // Gallery images

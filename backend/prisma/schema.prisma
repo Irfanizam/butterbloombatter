@@ -42,6 +42,7 @@ model Product {
   imagePublicId String? // Cloudinary public_id (for deletion)
   isAvailable   Boolean        @default(true)
   isFeatured    Boolean        @default(false)
+  sortOrder     Int            @default(0) // manual menu order (admin drag-reorder)
   categoryId    Int
   category      Category       @relation(fields: [categoryId], references: [id])
   orderItems    OrderItem[]

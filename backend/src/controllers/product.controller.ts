@@ -20,12 +20,15 @@ async function ensureCategoryExists(categoryId: number): Promise<void> {
   }
 }
 
+// Menu order: the admin's manual order first, newest first among ties (e.g. seeded rows).
+const menuOrder: Prisma.ProductOrderByWithRelationInput[] = [{ sortOrder: 'asc' }, { createdAt: 'desc' }];
+
 // GET /api/products  (public) — only available products
 export const listPublicProducts = asyncHandler(async (_req: Request, res: Response) => {
   const products = await prisma.product.findMany({
     where: { isAvailable: true },
     include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: menuOrder,
   });
   res.json(products);
 });
@@ -34,7 +37,22 @@ export const listPublicProducts = asyncHandler(async (_req: Request, res: Respon
 export const listAdminProducts = asyncHandler(async (_req: Request, res: Response) => {
   const products = await prisma.product.findMany({
     include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: menuOrder,
+  });
+  res.json(products);
+});
+
+// PATCH /api/products/reorder  (ADMIN) — sets sortOrder from the given id order
+export const reorderProducts = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as { ids?: unknown };
+  const ids = Array.isArray(body.ids) ? body.ids.map((id) => parseId(id)) : [];
+  if (ids.length === 0) throw new AppError(400, 'ids array is required');
+  await prisma.$transaction(
+    ids.map((id, index) => prisma.product.update({ where: { id }, data: { sortOrder: index } }))
+  );
+  const products = await prisma.product.findMany({
+    include: { category: true, images: { orderBy: { sortOrder: 'asc' } } },
+    orderBy: menuOrder,
   });
   res.json(products);
 });
@@ -119,6 +137,8 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
     imagePublicId = uploaded.publicId;
   }
 
+  // New products go to the top of the menu order (the menu used to be newest-first).
+  const first = await prisma.product.findFirst({ orderBy: { sortOrder: 'asc' }, select: { sortOrder: true } });
   const product = await prisma.product.create({
     data: {
       name,
@@ -128,6 +148,7 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
       allergens,
       isAvailable: parseBool(body.isAvailable, true),
       isFeatured: parseBool(body.isFeatured, false),
+      sortOrder: (first?.sortOrder ?? 1) - 1,
       categoryId,
       imageUrl,
       imagePublicId,

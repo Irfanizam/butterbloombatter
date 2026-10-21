@@ -43,6 +43,7 @@ export interface Product {
   imagePublicId: string | null;
   isAvailable: boolean;
   isFeatured: boolean;
+  sortOrder: number; // manual menu order
   categoryId: number;
   category?: Category;
   images?: ProductImage[];
