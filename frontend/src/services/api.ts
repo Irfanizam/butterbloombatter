@@ -102,6 +102,8 @@ export const productsApi = {
     api.put(`/api/products/${id}`, data, { onUploadProgress }).then((r) => r.data as Product),
   remove: (id: number) => api.delete(`/api/products/${id}`),
   toggleFeatured: (id: number) => api.patch(`/api/products/${id}/featured`).then((r) => r.data as Product),
+  reorder: (ids: number[]) =>
+    api.patch('/api/products/reorder', { ids }).then((r) => r.data as Product[]),
   addImages: (id: number, data: FormData) =>
     api.post(`/api/products/${id}/images`, data).then((r) => r.data as Product),
   removeImage: (id: number, imageId: number) => api.delete(`/api/products/${id}/images/${imageId}`),
