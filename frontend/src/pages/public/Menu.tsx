@@ -43,10 +43,10 @@ export function Menu() {
           <h2 className="relative mb-1 text-base font-bold text-brand-dark">📝 A little note before you order</h2>
           <p className="relative mb-3 text-sm text-brand-muted">
             Our cookies are made with simple ingredients. Each flavour has its own mix — look out for these icons to
-            see what’s in your cookies:
+            see what’s in our cookies:
           </p>
           <div className="relative flex flex-wrap items-center gap-3">
-            {ALLERGENS.map((a) => ({ ...a, note: a.key === 'tree_nuts' ? 'selected flavours only' : '' })).map((a) => (
+            {ALLERGENS.map((a) => (
               <span
                 key={a.label}
                 className="group flex items-center gap-2 rounded-full border border-brand-border-soft bg-white/90 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-brand-dark shadow-brand-sm transition-transform hover:-translate-y-0.5 hover:-rotate-2"
@@ -56,12 +56,7 @@ export function Menu() {
                 >
                   {a.emoji}
                 </span>
-                <span className="flex flex-col leading-tight">
-                  <span>{a.label}</span>
-                  {a.note && (
-                    <span className="text-[10px] font-normal italic text-brand-faded">({a.note})</span>
-                  )}
-                </span>
+                <span>{a.label}</span>
               </span>
             ))}
           </div>
