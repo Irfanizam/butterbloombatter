@@ -108,11 +108,11 @@ export function ReceiptModal({ order, onClose }: Props) {
   }
 
   return (
-    <Modal open={order !== null} onClose={onClose} title="Receipt" maxWidth="max-w-sm">
+    <Modal open={order !== null} onClose={onClose} title="Receipt" maxWidth="max-w-md">
       {order && (
         <div>
-          <div ref={cardRef} className="rounded-brand-lg bg-brand-bg p-4">
-            <div className="rounded-brand-lg bg-white px-6 py-7 text-center shadow-brand-lg">
+          <div ref={cardRef} className="rounded-brand-lg bg-brand-bg p-3">
+            <div className="rounded-brand-lg bg-white px-5 py-7 text-center shadow-brand-lg">
               <div className="text-4xl leading-none">🍪</div>
               <h3 className="mt-2 font-serif text-[26px] font-bold leading-tight text-brand-dark">{BUSINESS.name}</h3>
               <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-primary">Receipt</p>
