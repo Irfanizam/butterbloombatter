@@ -1,5 +1,8 @@
+import { useRef, useState } from 'react';
+import { toPng } from 'html-to-image';
 import { BUSINESS } from '../../lib/business';
 import { formatDate, formatRM } from '../../lib/format';
+import { useToast } from '../../hooks/useToast';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import type { Order } from '../../types';
@@ -39,70 +42,74 @@ function receiptText(order: Order): string {
   return lines.filter((l) => l !== '').join('\n');
 }
 
-function printReceipt(order: Order): void {
-  const rows = (order.orderItems ?? [])
-    .map(
-      (it) =>
-        `<tr><td>${it.quantity}× ${escapeHtml(it.product?.name ?? 'Item')}</td><td style="text-align:right">${formatRM(
-          it.unitPrice * it.quantity
-        )}</td></tr>`
-    )
-    .join('');
-  const html = `<!doctype html><html><head><meta charset="utf-8"/>
-    <title>Receipt ${order.orderNumber}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+/** Renders the preview card itself to a PNG, so the download and the print match the modal exactly. */
+async function captureReceipt(node: HTMLElement): Promise<string> {
+  await document.fonts.ready;
+  return toPng(node, { pixelRatio: 2 });
+}
+
+function printImage(w: Window, dataUrl: string, title: string): void {
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"/><title>${title}</title>
     <style>
-      body{font-family:'Quicksand',sans-serif;color:#3e2415;background:#fff6e6;margin:0;padding:32px;}
-      .r{max-width:420px;margin:0 auto;background:#fff;border-radius:22px;padding:28px;box-shadow:0 10px 30px rgba(107,66,38,.13);}
-      h1{font-family:'Fraunces',serif;font-size:26px;margin:0;color:#6b4226;}
-      .tag{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#b07a52;font-weight:700;margin-top:4px;}
-      .meta{margin:18px 0;font-size:13px;color:#8a6a4f;}
-      .meta b{color:#3e2415;}
-      table{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0;}
-      td{padding:7px 0;border-bottom:1px dashed #f0ddc4;}
-      .total{display:flex;justify-content:space-between;font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-top:12px;}
-      .status{display:inline-block;margin-top:14px;background:#fcebc4;color:#6b4226;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;}
-      .thanks{margin-top:20px;text-align:center;font-style:italic;color:#b07a52;font-size:13px;}
-      @media print{body{background:#fff;padding:0;}.r{box-shadow:none;}}
+      @page{margin:12mm}
+      body{margin:0;padding:24px;display:flex;justify-content:center;background:#fff}
+      img{width:100%;max-width:420px;height:auto}
+      @media print{body{padding:0}}
     </style></head><body>
-    <div class="r">
-      <div style="text-align:center">
-        <div style="font-size:34px">🍪</div>
-        <h1>${escapeHtml(BUSINESS.name)}</h1>
-        <div class="tag">Receipt</div>
-      </div>
-      <div class="meta">
-        <div>Order: <b>${order.orderNumber}</b></div>
-        <div>Date: <b>${formatDate(order.completedAt ?? order.createdAt)}</b></div>
-        ${order.customer?.name ? `<div>Customer: <b>${escapeHtml(order.customer.name)}</b></div>` : ''}
-        ${order.deliveryDate ? `<div>Delivery: <b>${formatDate(order.deliveryDate)}</b></div>` : ''}
-      </div>
-      <table>${rows}</table>
-      <div class="total"><span>Total</span><span>${formatRM(order.totalAmount)}</span></div>
-      <div class="status">${order.status}</div>
-      <div class="thanks">${escapeHtml(BUSINESS.tagline)}</div>
-    </div>
-    <script>window.onload=function(){setTimeout(function(){window.print();},400);}</script>
-    </body></html>`;
-  const w = window.open('', '_blank', 'width=480,height=720');
-  if (!w) return;
-  w.document.write(html);
+    <img src="${dataUrl}" alt="${title}" onload="setTimeout(function(){window.print()},150)"/>
+    </body></html>`);
   w.document.close();
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
-}
-
 export function ReceiptModal({ order, onClose }: Props) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [busy, setBusy] = useState<'download' | 'print' | null>(null);
+  const toast = useToast();
   const waNumber = toWaNumber(order?.customer?.phone);
+
+  async function downloadImage(o: Order): Promise<void> {
+    const node = cardRef.current;
+    if (!node) return;
+    setBusy('download');
+    try {
+      const dataUrl = await captureReceipt(node);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `receipt-${o.orderNumber}.png`;
+      a.click();
+    } catch {
+      toast.error('Could not create the receipt image');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function printReceipt(o: Order): Promise<void> {
+    const node = cardRef.current;
+    if (!node) return;
+    // Opened before the await so the browser still treats it as part of the click.
+    const w = window.open('', '_blank', 'width=480,height=720');
+    if (!w) {
+      toast.error('Allow pop-ups for this site to print the receipt');
+      return;
+    }
+    setBusy('print');
+    try {
+      const dataUrl = await captureReceipt(node);
+      printImage(w, dataUrl, `Receipt ${o.orderNumber}`);
+    } catch {
+      w.close();
+      toast.error('Could not create the receipt image');
+    } finally {
+      setBusy(null);
+    }
+  }
 
   return (
     <Modal open={order !== null} onClose={onClose} title="Receipt" maxWidth="max-w-sm">
       {order && (
         <div>
-          <div className="rounded-brand-lg border border-brand-border-soft bg-brand-bg p-5 text-center">
+          <div ref={cardRef} className="rounded-brand-lg border border-brand-border-soft bg-brand-bg p-5 text-center">
             <div className="text-3xl">🍪</div>
             <h3 className="mt-1 text-xl font-bold text-brand-dark">{BUSINESS.name}</h3>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary">Receipt</p>
@@ -155,7 +162,20 @@ export function ReceiptModal({ order, onClose }: Props) {
                 Add a phone number to this customer to send via WhatsApp.
               </p>
             )}
-            <Button variant="secondary" onClick={() => printReceipt(order)}>
+            <Button
+              variant="secondary"
+              loading={busy === 'download'}
+              disabled={busy !== null}
+              onClick={() => downloadImage(order)}
+            >
+              ⬇️ Download image
+            </Button>
+            <Button
+              variant="secondary"
+              loading={busy === 'print'}
+              disabled={busy !== null}
+              onClick={() => printReceipt(order)}
+            >
               🖨️ Print / Save PDF
             </Button>
           </div>
