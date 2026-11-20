@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import { BUSINESS } from '../../lib/business';
 import { formatDate, formatRM } from '../../lib/format';
+import { ORDER_STATUS_LABEL } from '../../lib/order-status';
 import { useToast } from '../../hooks/useToast';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -34,7 +35,7 @@ function receiptText(order: Order): string {
     ),
     '',
     `Total: ${formatRM(order.totalAmount)}`,
-    `Status: ${order.status}`,
+    `Status: ${ORDER_STATUS_LABEL[order.status]}`,
     order.deliveryDate ? `Delivery: ${formatDate(order.deliveryDate)}` : '',
     '',
     `Thank you! ${BUSINESS.tagline}`,
@@ -45,15 +46,16 @@ function receiptText(order: Order): string {
 /** Renders the preview card itself to a PNG, so the download and the print match the modal exactly. */
 async function captureReceipt(node: HTMLElement): Promise<string> {
   await document.fonts.ready;
-  return toPng(node, { pixelRatio: 2 });
+  return toPng(node, { pixelRatio: 3 });
 }
 
+/** The window title becomes the default file name when the user picks "Save as PDF". */
 function printImage(w: Window, dataUrl: string, title: string): void {
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"/><title>${title}</title>
     <style>
       @page{margin:12mm}
       body{margin:0;padding:24px;display:flex;justify-content:center;background:#fff}
-      img{width:100%;max-width:420px;height:auto}
+      img{width:100%;max-width:440px;height:auto}
       @media print{body{padding:0}}
     </style></head><body>
     <img src="${dataUrl}" alt="${title}" onload="setTimeout(function(){window.print()},150)"/>
@@ -75,7 +77,7 @@ export function ReceiptModal({ order, onClose }: Props) {
       const dataUrl = await captureReceipt(node);
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `receipt-${o.orderNumber}.png`;
+      a.download = `${o.orderNumber}.png`;
       a.click();
     } catch {
       toast.error('Could not create the receipt image');
@@ -88,7 +90,7 @@ export function ReceiptModal({ order, onClose }: Props) {
     const node = cardRef.current;
     if (!node) return;
     // Opened before the await so the browser still treats it as part of the click.
-    const w = window.open('', '_blank', 'width=480,height=720');
+    const w = window.open('', '_blank', 'width=520,height=760');
     if (!w) {
       toast.error('Allow pop-ups for this site to print the receipt');
       return;
@@ -96,7 +98,7 @@ export function ReceiptModal({ order, onClose }: Props) {
     setBusy('print');
     try {
       const dataUrl = await captureReceipt(node);
-      printImage(w, dataUrl, `Receipt ${o.orderNumber}`);
+      printImage(w, dataUrl, o.orderNumber);
     } catch {
       w.close();
       toast.error('Could not create the receipt image');
@@ -109,36 +111,50 @@ export function ReceiptModal({ order, onClose }: Props) {
     <Modal open={order !== null} onClose={onClose} title="Receipt" maxWidth="max-w-sm">
       {order && (
         <div>
-          <div ref={cardRef} className="rounded-brand-lg border border-brand-border-soft bg-brand-bg p-5 text-center">
-            <div className="text-3xl">🍪</div>
-            <h3 className="mt-1 text-xl font-bold text-brand-dark">{BUSINESS.name}</h3>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary">Receipt</p>
-            <div className="mt-4 text-left text-sm text-brand-muted">
-              <p>
-                Order: <span className="font-semibold text-brand-dark">{order.orderNumber}</span>
-              </p>
-              <p>
-                Date: <span className="font-semibold text-brand-dark">{formatDate(order.completedAt ?? order.createdAt)}</span>
-              </p>
-              {order.customer?.name && (
+          <div ref={cardRef} className="rounded-brand-lg bg-brand-bg p-4">
+            <div className="rounded-brand-lg bg-white px-6 py-7 text-center shadow-brand-lg">
+              <div className="text-4xl leading-none">🍪</div>
+              <h3 className="mt-2 font-serif text-[26px] font-bold leading-tight text-brand-dark">{BUSINESS.name}</h3>
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-primary">Receipt</p>
+              <div className="mt-4 space-y-0.5 text-left text-[13px] text-brand-muted">
                 <p>
-                  Customer: <span className="font-semibold text-brand-dark">{order.customer.name}</span>
+                  Order: <span className="font-semibold text-brand-text">{order.orderNumber}</span>
                 </p>
-              )}
-            </div>
-            <div className="mt-3 space-y-1 text-left text-sm">
-              {(order.orderItems ?? []).map((it) => (
-                <div key={it.id} className="flex justify-between border-b border-dashed border-brand-border py-1">
-                  <span>
-                    {it.quantity}× {it.product?.name ?? 'Item'}
-                  </span>
-                  <span className="text-brand-muted">{formatRM(it.unitPrice * it.quantity)}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 flex justify-between font-bold text-brand-dark">
-              <span>Total</span>
-              <span>{formatRM(order.totalAmount)}</span>
+                <p>
+                  Date: <span className="font-semibold text-brand-text">{formatDate(order.completedAt ?? order.createdAt)}</span>
+                </p>
+                {order.customer?.name && (
+                  <p>
+                    Customer: <span className="font-semibold text-brand-text">{order.customer.name}</span>
+                  </p>
+                )}
+                {order.deliveryDate && (
+                  <p>
+                    Delivery: <span className="font-semibold text-brand-text">{formatDate(order.deliveryDate)}</span>
+                  </p>
+                )}
+              </div>
+              <div className="mt-3 text-left text-sm text-brand-text">
+                {(order.orderItems ?? []).map((it) => (
+                  <div
+                    key={it.id}
+                    className="flex items-start justify-between gap-3 border-b border-dashed border-brand-border py-1.5"
+                  >
+                    <span className="min-w-0 flex-1">
+                      {it.quantity}× {it.product?.name ?? 'Item'}
+                    </span>
+                    <span className="whitespace-nowrap text-brand-muted">{formatRM(it.unitPrice * it.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex justify-between font-serif text-xl font-bold text-brand-text">
+                <span>Total</span>
+                <span className="whitespace-nowrap">{formatRM(order.totalAmount)}</span>
+              </div>
+              <span className="mt-3.5 inline-block rounded-full bg-brand-soft px-3.5 py-1 text-xs font-bold text-brand-dark">
+                {ORDER_STATUS_LABEL[order.status]}
+              </span>
+              <p className="mt-5 text-[13px] italic text-brand-primary">{BUSINESS.tagline}</p>
             </div>
           </div>
 
