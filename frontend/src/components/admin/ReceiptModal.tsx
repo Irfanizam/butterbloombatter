@@ -22,11 +22,16 @@ function toWaNumber(phone: string | null | undefined): string | null {
   return digits || null;
 }
 
+/** The receipt is dated by delivery when the order has one, matching how the ledger dates the income. */
+function receiptDate(order: Order): string {
+  return formatDate(order.deliveryDate ?? order.completedAt ?? order.createdAt);
+}
+
 function receiptText(order: Order): string {
   const lines = [
     `🍪 ${BUSINESS.name} — Receipt`,
     `Order: ${order.orderNumber}`,
-    `Date: ${formatDate(order.completedAt ?? order.createdAt)}`,
+    `Date: ${receiptDate(order)}`,
     order.customer?.name ? `Customer: ${order.customer.name}` : '',
     '',
     ...(order.orderItems ?? []).map(
@@ -36,7 +41,6 @@ function receiptText(order: Order): string {
     '',
     `Total: ${formatRM(order.totalAmount)}`,
     `Status: ${ORDER_STATUS_LABEL[order.status]}`,
-    order.deliveryDate ? `Delivery: ${formatDate(order.deliveryDate)}` : '',
     '',
     `Thank you! ${BUSINESS.tagline}`,
   ];
@@ -121,16 +125,11 @@ export function ReceiptModal({ order, onClose }: Props) {
                   Order: <span className="font-semibold text-brand-text">{order.orderNumber}</span>
                 </p>
                 <p>
-                  Date: <span className="font-semibold text-brand-text">{formatDate(order.completedAt ?? order.createdAt)}</span>
+                  Date: <span className="font-semibold text-brand-text">{receiptDate(order)}</span>
                 </p>
                 {order.customer?.name && (
                   <p>
                     Customer: <span className="font-semibold text-brand-text">{order.customer.name}</span>
-                  </p>
-                )}
-                {order.deliveryDate && (
-                  <p>
-                    Delivery: <span className="font-semibold text-brand-text">{formatDate(order.deliveryDate)}</span>
                   </p>
                 )}
               </div>
